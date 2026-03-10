@@ -84,7 +84,7 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "letusell-cart",
-      partialState: (state) => ({
+      partialize: (state) => ({
         items: state.items,
         vendorId: state.vendorId,
         vendorName: state.vendorName,

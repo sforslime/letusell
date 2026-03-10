@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import type { Order } from "@/types/database.types";
 
 export function useRealtimeOrders(vendorId: string | null) {
@@ -20,7 +21,7 @@ export function useRealtimeOrders(vendorId: string | null) {
       .neq("status", "completed")
       .neq("status", "cancelled")
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data }: { data: Order[] | null }) => {
         setOrders(data ?? []);
         setLoading(false);
       });
@@ -36,7 +37,7 @@ export function useRealtimeOrders(vendorId: string | null) {
           table: "orders",
           filter: `vendor_id=eq.${vendorId}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Order>) => {
           if (payload.eventType === "INSERT") {
             setOrders((prev) => [payload.new as Order, ...prev]);
           } else if (payload.eventType === "UPDATE") {
