@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { ShoppingBag, ArrowLeft } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";

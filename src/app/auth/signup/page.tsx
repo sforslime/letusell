@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 import { SignupForm } from "@/components/auth/signup-form";
 import { ShoppingBag } from "lucide-react";
 

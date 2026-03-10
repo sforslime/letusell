@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 import { LoginForm } from "@/components/auth/login-form";
 import { ShoppingBag } from "lucide-react";
 
