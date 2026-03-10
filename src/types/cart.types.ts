@@ -1,0 +1,26 @@
+import type { MenuItem, Vendor } from "./database.types";
+
+export interface CartItem {
+  menuItemId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl: string | null;
+  notes?: string;
+}
+
+export interface CartState {
+  items: CartItem[];
+  vendorId: string | null;
+  vendorName: string | null;
+  vendorSlug: string | null;
+}
+
+export interface CartActions {
+  addItem: (item: CartItem, vendor: Pick<Vendor, "id" | "name" | "slug">) => void;
+  removeItem: (menuItemId: string) => void;
+  updateQuantity: (menuItemId: string, quantity: number) => void;
+  clearCart: () => void;
+  getTotal: () => number;
+  getItemCount: () => number;
+}
