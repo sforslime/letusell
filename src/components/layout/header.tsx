@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ShoppingBag, User, Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/hooks/use-cart";
@@ -25,11 +26,10 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-500">
-            <ShoppingBag className="h-4 w-4 text-white" />
+        <Link href="/" className="flex items-center">
+          <div className="relative h-9 w-40 overflow-hidden">
+            <Image src="/logo.png" alt={siteConfig.name} fill className="object-cover object-center" priority />
           </div>
-          <span className="text-lg font-bold text-gray-900">{siteConfig.name}</span>
         </Link>
 
         {/* Desktop nav */}
@@ -77,7 +77,7 @@ export function Header() {
             </div>
           ) : (
             <Link href="/auth/login" className="hidden md:block">
-              <Button size="sm">Sign in</Button>
+              <Button size="sm" className="shadow-sm shadow-brand-500/20">Sign in</Button>
             </Link>
           )}
 

@@ -29,33 +29,35 @@ export default function CartPage() {
         </div>
 
         {items.length === 0 ? (
-          <div className="py-20 text-center">
-            <ShoppingBag className="mx-auto h-12 w-12 text-gray-300" />
-            <h2 className="mt-4 font-semibold text-gray-700">Your cart is empty</h2>
-            <p className="mt-1 text-sm text-gray-400">Browse vendors and add items to get started</p>
-            <Link href="/vendors" className="mt-6 inline-block">
-              <Button>Browse vendors</Button>
+          <div className="flex flex-col items-center py-24 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-50">
+              <ShoppingBag className="h-10 w-10 text-gray-300" />
+            </div>
+            <h2 className="mt-5 text-lg font-bold text-gray-800">Your cart is empty</h2>
+            <p className="mt-1.5 text-sm text-gray-400">Browse vendors and add items to get started</p>
+            <Link href="/vendors" className="mt-7">
+              <Button size="lg" className="shadow-sm shadow-brand-500/20">Browse vendors</Button>
             </Link>
           </div>
         ) : (
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4">
             {/* Vendor info */}
             {vendorName && vendorSlug && (
-              <div className="flex items-center justify-between rounded-2xl bg-brand-50 px-4 py-3">
+              <div className="flex items-center justify-between rounded-2xl bg-brand-50 px-4 py-3 border border-brand-100">
                 <div>
-                  <p className="text-xs text-brand-600">Ordering from</p>
-                  <Link href={`/vendors/${vendorSlug}`} className="text-sm font-semibold text-brand-700 hover:underline">
+                  <p className="text-xs font-medium text-brand-500 uppercase tracking-wide">Ordering from</p>
+                  <Link href={`/vendors/${vendorSlug}`} className="text-sm font-bold text-brand-700 hover:underline">
                     {vendorName}
                   </Link>
                 </div>
-                <button onClick={clearCart} className="text-xs text-gray-400 hover:text-red-500">
+                <button onClick={clearCart} className="text-xs text-gray-400 hover:text-red-500 transition-colors">
                   Clear cart
                 </button>
               </div>
             )}
 
             {/* Items */}
-            <div className="rounded-2xl border border-gray-100 bg-white divide-y divide-gray-50 px-4">
+            <div className="rounded-2xl border border-gray-100 bg-white divide-y divide-gray-50 px-4 shadow-sm">
               {items.map((item) => (
                 <CartItemRow key={item.menuItemId} item={item} />
               ))}
@@ -66,8 +68,8 @@ export default function CartPage() {
 
             {/* Checkout CTA */}
             <Link href="/checkout">
-              <Button className="w-full" size="lg">
-                Proceed to checkout
+              <Button className="w-full shadow-lg shadow-brand-500/20" size="lg">
+                Checkout · {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", minimumFractionDigits: 0 }).format(total)}
               </Button>
             </Link>
           </div>

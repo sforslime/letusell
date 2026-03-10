@@ -32,75 +32,76 @@ export function VendorCard({ vendor }: VendorCardProps) {
 
   return (
     <Link href={`/vendors/${vendor.slug}`} className="group block">
-      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
         {/* Banner */}
-        <div className="relative h-40 w-full bg-gradient-to-br from-brand-100 to-brand-200">
+        <div className="relative h-44 w-full bg-gradient-to-br from-brand-100 to-brand-200 overflow-hidden">
           {vendor.banner_url ? (
             <Image
               src={vendor.banner_url}
               alt={vendor.name}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
             <div className="flex h-full items-center justify-center">
-              <span className="text-5xl">🍽️</span>
+              <span className="text-6xl opacity-80">🍽️</span>
             </div>
           )}
+          {/* Gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
           <div className="absolute right-3 top-3">
             <Badge variant={open ? "success" : "outline"}>
               {open ? "Open" : "Closed"}
             </Badge>
           </div>
+          {/* Logo overlapping the banner */}
+          {vendor.logo_url && (
+            <div className="absolute bottom-3 left-3 h-10 w-10 overflow-hidden rounded-xl border-2 border-white shadow-md">
+              <Image
+                src={vendor.logo_url}
+                alt={`${vendor.name} logo`}
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
         </div>
 
         {/* Info */}
         <div className="p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <h3 className="truncate font-semibold text-gray-900 group-hover:text-brand-600 transition-colors">
-                {vendor.name}
-              </h3>
-              <p className="mt-0.5 text-xs text-gray-500">
-                {categoryLabels[vendor.category] ?? vendor.category}
-              </p>
-            </div>
-            {vendor.logo_url && (
-              <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl border border-gray-100">
-                <Image
-                  src={vendor.logo_url}
-                  alt={`${vendor.name} logo`}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            )}
+          <div className="min-w-0">
+            <h3 className="truncate font-bold text-gray-900 group-hover:text-brand-600 transition-colors">
+              {vendor.name}
+            </h3>
+            <p className="mt-0.5 text-xs font-medium text-gray-400 uppercase tracking-wide">
+              {categoryLabels[vendor.category] ?? vendor.category}
+            </p>
           </div>
 
-          <div className="mt-3 flex items-center gap-3 text-xs text-gray-500">
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
             {vendor.rating > 0 && (
               <span className="flex items-center gap-1">
                 <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                {vendor.rating.toFixed(1)}
+                <span className="font-semibold text-gray-700">{vendor.rating.toFixed(1)}</span>
                 <span className="text-gray-400">({vendor.review_count})</span>
               </span>
             )}
             <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
+              <Clock className="h-3.5 w-3.5 text-gray-400" />
               {vendor.avg_prep_time} min
             </span>
             {vendor.location_text && (
               <span className="flex min-w-0 items-center gap-1">
-                <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
                 <span className="truncate">{vendor.location_text}</span>
               </span>
             )}
           </div>
 
           {vendor.min_order > 0 && (
-            <p className="mt-2 text-xs text-gray-400">
-              Min. order: {formatNGN(vendor.min_order)}
+            <p className="mt-2.5 text-xs text-gray-400 border-t border-gray-50 pt-2.5">
+              Min. order: <span className="font-medium text-gray-600">{formatNGN(vendor.min_order)}</span>
             </p>
           )}
         </div>
