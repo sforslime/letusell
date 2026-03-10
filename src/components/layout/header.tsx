@@ -28,7 +28,7 @@ export function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <div className="relative h-9 w-40 overflow-hidden">
-            <Image src="/logo.png" alt={siteConfig.name} fill className="object-cover object-center" priority />
+            <Image src="/logo.png" alt={siteConfig.name} fill className="object-cover object-[center_50%]" priority />
           </div>
         </Link>
 
