@@ -14,8 +14,12 @@ export function Header() {
   const { getItemCount, openDrawer } = useCart();
   const { user, profile, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  const itemCount = getItemCount();
+
+  useEffect(() => setMounted(true), []);
+
+  const itemCount = mounted ? getItemCount() : 0;
 
   async function handleSignOut() {
     await signOut();

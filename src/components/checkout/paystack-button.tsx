@@ -7,6 +7,7 @@ import { koboToNaira } from "@/lib/utils/currency";
 
 interface PaystackButtonProps {
   accessCode: string;
+  email: string;
   amount: number; // kobo
   onSuccess: () => void;
   onClose: () => void;
@@ -17,13 +18,22 @@ interface PaystackButtonProps {
 declare global {
   interface Window {
     PaystackPop?: {
-      setup: (config: object) => { openIframe: () => void };
+      setup: (config: {
+        key: string;
+        email?: string;
+        amount?: number;
+        access_code?: string;
+        onSuccess?: () => void;
+        onClose?: () => void;
+        [key: string]: unknown;
+      }) => { openIframe: () => void };
     };
   }
 }
 
 export function PaystackButton({
   accessCode,
+  email,
   amount,
   onSuccess,
   onClose,
@@ -35,7 +45,7 @@ export function PaystackButton({
   useEffect(() => {
     if (scriptLoaded.current) return;
     const script = document.createElement("script");
-    script.src = "https://js.paystack.co/v2/inline.js";
+    script.src = "https://js.paystack.co/v1/inline.js";
     script.async = true;
     document.head.appendChild(script);
     scriptLoaded.current = true;
@@ -47,14 +57,26 @@ export function PaystackButton({
       return;
     }
 
-    const handler = window.PaystackPop.setup({
-      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
-      access_code: accessCode,
-      onSuccess,
-      onClose,
-    });
+    const key = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+    if (!key) {
+      alert("Paystack public key is not configured. Add NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY to your .env.local file.");
+      return;
+    }
 
-    handler.openIframe();
+    try {
+      const handler = window.PaystackPop.setup({
+        key,
+        email,
+        amount,
+        access_code: accessCode,
+        onSuccess,
+        onClose,
+      });
+      handler.openIframe();
+    } catch (err) {
+      console.error("Paystack setup error:", err);
+      alert("Could not open payment. Please try again.");
+    }
   }
 
   return (

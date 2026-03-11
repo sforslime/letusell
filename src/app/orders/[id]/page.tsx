@@ -48,8 +48,11 @@ export default function OrderConfirmationPage({ params }: PageProps) {
       setOrder(data);
       setLoading(false);
 
-      // Keep polling if payment still pending
+      // If payment still pending, poll — and proactively verify with Paystack
       if (data.payment_status === "pending" || data.status === "awaiting_payment") {
+        // Trigger a server-side verify immediately (handles case where webhook hasn't fired yet)
+        fetch(`/api/orders/${id}/verify`, { method: "POST" }).catch(() => null);
+
         interval = setInterval(async () => {
           const r = await fetch(`/api/orders/${id}`);
           if (r.ok) {
@@ -57,6 +60,9 @@ export default function OrderConfirmationPage({ params }: PageProps) {
             setOrder(updated);
             if (updated.status !== "awaiting_payment" && updated.payment_status !== "pending") {
               clearInterval(interval);
+            } else {
+              // Re-verify on each poll in case previous verify hadn't settled
+              fetch(`/api/orders/${id}/verify`, { method: "POST" }).catch(() => null);
             }
           }
         }, 3000);
@@ -132,7 +138,11 @@ export default function OrderConfirmationPage({ params }: PageProps) {
           {order.pickup_time && (
             <div className="mt-3 flex items-center gap-2 text-sm text-gray-700">
               <Clock className="h-4 w-4 text-gray-400" />
-              Pickup: <strong>{formatPickupTime(order.pickup_time)}</strong>
+              {(() => {
+                const minsLeft = Math.round((new Date(order.pickup_time).getTime() - Date.now()) / 60_000);
+                if (minsLeft <= 0) return <span>Ready for pickup</span>;
+                return <span>Ready in approx. <strong>{minsLeft} min</strong></span>;
+              })()}
             </div>
           )}
 

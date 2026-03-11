@@ -1,33 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/validations/checkout.schema";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PickupTimeSelector } from "./pickup-time-selector";
 
 interface CheckoutFormProps {
-  vendorSlug: string;
   onSubmit: (values: CheckoutFormValues) => void;
   isSubmitting: boolean;
   children: React.ReactNode; // Payment button slot
 }
 
-export function CheckoutForm({ vendorSlug, onSubmit, isSubmitting, children }: CheckoutFormProps) {
+export function CheckoutForm({ onSubmit, isSubmitting, children }: CheckoutFormProps) {
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
   });
-
-  const pickupTime = watch("pickupTime");
-  const [slotsAvailable, setSlotsAvailable] = useState(true);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
@@ -58,19 +50,6 @@ export function CheckoutForm({ vendorSlug, onSubmit, isSubmitting, children }: C
       </div>
 
       <div>
-        <h2 className="text-base font-bold text-gray-900 mb-3">Pickup time</h2>
-        <PickupTimeSelector
-          vendorSlug={vendorSlug}
-          value={pickupTime}
-          onChange={(v) => setValue("pickupTime", v, { shouldValidate: true })}
-          onSlotsLoaded={setSlotsAvailable}
-        />
-        {errors.pickupTime && (
-          <p className="mt-1 text-xs text-red-500">{errors.pickupTime.message}</p>
-        )}
-      </div>
-
-      <div>
         <Textarea
           label="Order notes (optional)"
           placeholder="Allergies, special requests..."
@@ -79,9 +58,7 @@ export function CheckoutForm({ vendorSlug, onSubmit, isSubmitting, children }: C
         />
       </div>
 
-      <fieldset className="mt-2" disabled={!slotsAvailable}>
-        {children}
-      </fieldset>
+      <div className="mt-2">{children}</div>
     </form>
   );
 }

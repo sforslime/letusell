@@ -8,7 +8,6 @@ export const checkoutSchema = z.object({
     .regex(/^(\+?234|0)[789]\d{9}$/, "Enter a valid Nigerian phone number")
     .optional()
     .or(z.literal("")),
-  pickupTime: z.string({ error: "Please select a pickup time" }).min(1, "Please select a pickup time"),
   notes: z.string().max(300, "Notes must be under 300 characters").optional(),
 });
 

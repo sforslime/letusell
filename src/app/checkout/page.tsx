@@ -26,6 +26,7 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const [initData, setInitData] = useState<CheckoutInitializeResponse | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [customerEmail, setCustomerEmail] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
   const total = getTotal();
@@ -72,7 +73,6 @@ export default function CheckoutPage() {
             phone: values.phone || undefined,
           },
           vendorId,
-          pickupTime: values.pickupTime,
           notes: values.notes || undefined,
         }),
       });
@@ -85,6 +85,7 @@ export default function CheckoutPage() {
 
       setInitData(data as CheckoutInitializeResponse);
       setOrderId(data.orderId);
+      setCustomerEmail(values.email);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -102,8 +103,8 @@ export default function CheckoutPage() {
         // localStorage unavailable — ignore
       }
     }
-    clearCart();
     router.push(`/orders/${orderId}`);
+    clearCart();
   }
 
   function handlePaymentClose() {
@@ -131,7 +132,6 @@ export default function CheckoutPage() {
             {!initData ? (
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
                 <CheckoutForm
-                  vendorSlug={vendorSlug ?? ""}
                   onSubmit={handleFormSubmit}
                   isSubmitting={isInitializing}
                 >
@@ -152,6 +152,7 @@ export default function CheckoutPage() {
                 </p>
                 <PaystackButton
                   accessCode={initData.accessCode}
+                  email={customerEmail}
                   amount={initData.amount}
                   onSuccess={handlePaymentSuccess}
                   onClose={handlePaymentClose}
