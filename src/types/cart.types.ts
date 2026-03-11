@@ -23,4 +23,10 @@ export interface CartActions {
   clearCart: () => void;
   getTotal: () => number;
   getItemCount: () => number;
+  openDrawer: () => void;
+  closeDrawer: () => void;
+}
+
+export interface CartDrawerState {
+  drawerOpen: boolean;
 }

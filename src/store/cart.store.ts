@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { CartItem, CartState, CartActions } from "@/types/cart.types";
+import type { CartItem, CartState, CartActions, CartDrawerState } from "@/types/cart.types";
 import type { Vendor } from "@/types/database.types";
 
-type CartStore = CartState & CartActions;
+type CartStore = CartState & CartDrawerState & CartActions;
 
 export const useCartStore = create<CartStore>()(
   persist(
@@ -12,6 +12,7 @@ export const useCartStore = create<CartStore>()(
       vendorId: null,
       vendorName: null,
       vendorSlug: null,
+      drawerOpen: false,
 
       addItem(item, vendor) {
         const { items, vendorId } = get();
@@ -69,6 +70,14 @@ export const useCartStore = create<CartStore>()(
 
       clearCart() {
         set({ items: [], vendorId: null, vendorName: null, vendorSlug: null });
+      },
+
+      openDrawer() {
+        set({ drawerOpen: true });
+      },
+
+      closeDrawer() {
+        set({ drawerOpen: false });
       },
 
       getTotal() {
