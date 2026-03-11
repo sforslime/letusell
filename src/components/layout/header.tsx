@@ -7,11 +7,12 @@ import { useState } from "react";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { CartDrawer } from "@/components/cart/cart-drawer";
 import { siteConfig } from "@/config/site";
 import { useRouter } from "next/navigation";
 
 export function Header() {
-  const { getItemCount } = useCart();
+  const { getItemCount, openDrawer } = useCart();
   const { user, profile, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
@@ -52,16 +53,14 @@ export function Header() {
         {/* Right actions */}
         <div className="flex items-center gap-2">
           {/* Cart */}
-          <Link href="/cart">
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingBag className="h-5 w-5" />
-              {itemCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
-                  {itemCount > 9 ? "9+" : itemCount}
-                </span>
-              )}
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" className="relative" onClick={openDrawer}>
+            <ShoppingBag className="h-5 w-5" />
+            {itemCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
+                {itemCount > 9 ? "9+" : itemCount}
+              </span>
+            )}
+          </Button>
 
           {/* Auth */}
           {user ? (
@@ -131,5 +130,7 @@ export function Header() {
         </div>
       )}
     </header>
+
+    <CartDrawer />
   );
 }
