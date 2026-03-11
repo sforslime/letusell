@@ -7,11 +7,12 @@ import { Spinner } from "@/components/ui/spinner";
 
 interface PickupTimeSelectorProps {
   vendorSlug: string;
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
+  onSlotsLoaded?: (hasSlots: boolean) => void;
 }
 
-export function PickupTimeSelector({ vendorSlug, value, onChange }: PickupTimeSelectorProps) {
+export function PickupTimeSelector({ vendorSlug, value, onChange, onSlotsLoaded }: PickupTimeSelectorProps) {
   const [slots, setSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,11 +20,16 @@ export function PickupTimeSelector({ vendorSlug, value, onChange }: PickupTimeSe
     fetch(`/api/vendors/${vendorSlug}/availability`)
       .then((r) => r.json())
       .then((data) => {
-        setSlots(data.slots ?? []);
+        const loaded: string[] = data.slots ?? [];
+        setSlots(loaded);
         setLoading(false);
+        onSlotsLoaded?.(loaded.length > 0);
       })
-      .catch(() => setLoading(false));
-  }, [vendorSlug]);
+      .catch(() => {
+        setLoading(false);
+        onSlotsLoaded?.(false);
+      });
+  }, [vendorSlug, onSlotsLoaded]);
 
   if (loading) {
     return (

@@ -8,6 +8,7 @@ export function formatDate(iso: string): string {
 
 export function formatPickupTime(iso: string): string {
   return new Intl.DateTimeFormat("en-NG", {
+    timeZone: "Africa/Lagos",
     weekday: "short",
     hour: "numeric",
     minute: "2-digit",
@@ -17,6 +18,7 @@ export function formatPickupTime(iso: string): string {
 
 /**
  * Generate 15-minute pickup slots between opensAt and closesAt for today.
+ * Times are interpreted as Africa/Lagos (WAT = UTC+1, no DST).
  * @param opensAt  "HH:MM" e.g. "08:00"
  * @param closesAt "HH:MM" e.g. "20:00"
  * @param bufferMins minutes from now before first available slot
@@ -27,10 +29,13 @@ export function generatePickupSlots(
   bufferMins = 20
 ): string[] {
   const now = new Date();
-  const today = now.toISOString().slice(0, 10); // "YYYY-MM-DD"
 
-  const open = new Date(`${today}T${opensAt}:00`);
-  const close = new Date(`${today}T${closesAt}:00`);
+  // Get today's date in Nigeria (WAT = UTC+1). "en-CA" gives YYYY-MM-DD format.
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Lagos" }).format(now);
+
+  // Parse open/close as WAT times by appending the +01:00 offset
+  const open = new Date(`${today}T${opensAt}:00+01:00`);
+  const close = new Date(`${today}T${closesAt}:00+01:00`);
   const earliest = new Date(now.getTime() + bufferMins * 60_000);
 
   const slots: string[] = [];

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/validations/checkout.schema";
@@ -26,6 +27,7 @@ export function CheckoutForm({ vendorSlug, onSubmit, isSubmitting, children }: C
   });
 
   const pickupTime = watch("pickupTime");
+  const [slotsAvailable, setSlotsAvailable] = useState(true);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
@@ -61,6 +63,7 @@ export function CheckoutForm({ vendorSlug, onSubmit, isSubmitting, children }: C
           vendorSlug={vendorSlug}
           value={pickupTime}
           onChange={(v) => setValue("pickupTime", v, { shouldValidate: true })}
+          onSlotsLoaded={setSlotsAvailable}
         />
         {errors.pickupTime && (
           <p className="mt-1 text-xs text-red-500">{errors.pickupTime.message}</p>
@@ -76,7 +79,9 @@ export function CheckoutForm({ vendorSlug, onSubmit, isSubmitting, children }: C
         />
       </div>
 
-      <div className="mt-2">{children}</div>
+      <fieldset className="mt-2" disabled={!slotsAvailable}>
+        {children}
+      </fieldset>
     </form>
   );
 }
