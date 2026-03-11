@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CheckCircle, Clock, MapPin, ArrowLeft } from "lucide-react";
+import { CheckCircle, Clock, MapPin, ArrowLeft, Link2 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
@@ -14,7 +14,7 @@ import { formatNGN } from "@/lib/utils/currency";
 import { koboToNaira } from "@/lib/utils/currency";
 import { formatPickupTime } from "@/lib/utils/date";
 import type { OrderWithItems } from "@/types/database.types";
-import { use } from "react";
+import { use, useCallback } from "react";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -25,6 +25,14 @@ export default function OrderConfirmationPage({ params }: PageProps) {
   const [order, setOrder] = useState<OrderWithItems | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const copyLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -153,6 +161,23 @@ export default function OrderConfirmationPage({ params }: PageProps) {
             <span>{formatNGN(koboToNaira(order.amount_kobo))}</span>
           </div>
         </div>
+
+        {/* Guest save-link prompt */}
+        {!order.user_id && isPaid && (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm font-medium text-amber-800">Save your order link</p>
+            <p className="mt-0.5 text-xs text-amber-700">
+              You placed this as a guest. Bookmark this page or copy the link below to track your order later.
+            </p>
+            <button
+              onClick={copyLink}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs font-medium text-amber-800 hover:bg-amber-50 transition-colors"
+            >
+              <Link2 className="h-3.5 w-3.5" />
+              {linkCopied ? "Link copied!" : "Copy order link"}
+            </button>
+          </div>
+        )}
 
         <div className="mt-6 flex flex-col gap-3">
           <Link href="/vendors">

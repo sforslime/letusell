@@ -13,7 +13,7 @@ export async function GET(
   const { data: order, error } = await admin
     .from("orders")
     .select(`
-      id, status, payment_status, amount_kobo, pickup_time,
+      id, user_id, status, payment_status, amount_kobo, pickup_time,
       customer_name, customer_email, notes, created_at,
       order_items (id, item_name, item_price, quantity, subtotal, notes),
       vendors (id, name, slug, logo_url, location_text)

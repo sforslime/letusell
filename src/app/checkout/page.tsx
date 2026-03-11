@@ -93,6 +93,15 @@ export default function CheckoutPage() {
   }
 
   function handlePaymentSuccess() {
+    if (orderId) {
+      try {
+        const existing = JSON.parse(localStorage.getItem("letusell-recent-orders") ?? "[]");
+        const updated = [orderId, ...existing.filter((id: string) => id !== orderId)].slice(0, 10);
+        localStorage.setItem("letusell-recent-orders", JSON.stringify(updated));
+      } catch {
+        // localStorage unavailable — ignore
+      }
+    }
     clearCart();
     router.push(`/orders/${orderId}`);
   }
