@@ -1,8 +1,10 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X } from "lucide-react";
+import { X, ImagePlus, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { menuItemSchema, type MenuItemFormValues } from "@/lib/validations/menu-item.schema";
 import { Input } from "@/components/ui/input";
@@ -17,6 +19,7 @@ interface MenuItemFormModalProps {
   item: MenuItem | null;
   onClose: () => void;
   onSaved: (item: MenuItem) => void;
+  onDeleted?: (id: string) => void;
 }
 
 export function MenuItemFormModal({
@@ -26,8 +29,15 @@ export function MenuItemFormModal({
   item,
   onClose,
   onSaved,
+  onDeleted,
 }: MenuItemFormModalProps) {
   const supabase = getSupabaseBrowserClient();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(item?.image_url ?? null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const {
     register,
@@ -46,12 +56,57 @@ export function MenuItemFormModal({
     },
   });
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadError("Image must be under 2 MB");
+      return;
+    }
+    setUploadError(null);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  function clearImage() {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  async function uploadImage(file: File): Promise<string> {
+    const ext = file.name.split(".").pop();
+    const path = `${vendorId}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("menu-images").upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+    if (error) throw new Error("Image upload failed: " + error.message);
+    const { data } = supabase.storage.from("menu-images").getPublicUrl(path);
+    return data.publicUrl;
+  }
+
   async function onSubmit(values: MenuItemFormValues) {
+    setUploadError(null);
+    let imageUrl: string | null = item?.image_url ?? null;
+
+    if (imageFile) {
+      try {
+        imageUrl = await uploadImage(imageFile);
+      } catch (e) {
+        setUploadError((e as Error).message);
+        return;
+      }
+    } else if (!imagePreview) {
+      imageUrl = null;
+    }
+
     const payload = {
       ...values,
       vendor_id: vendorId,
       menu_id: menuId,
       category_id: values.category_id || null,
+      image_url: imageUrl,
     };
 
     let saved: MenuItem;
@@ -76,11 +131,19 @@ export function MenuItemFormModal({
     onSaved(saved);
   }
 
+  async function handleDelete() {
+    if (!item || !onDeleted) return;
+    setDeleting(true);
+    await supabase.from("menu_items").delete().eq("id", item.id);
+    onDeleted(item.id);
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <div className="mb-5 flex items-center justify-between">
+      <div className="relative w-full max-w-md rounded-2xl bg-white shadow-xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-gray-900">
             {item ? "Edit item" : "New menu item"}
           </h2>
@@ -89,58 +152,138 @@ export function MenuItemFormModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <Input
-            label="Item name"
-            placeholder="e.g. Jollof Rice + Chicken"
-            error={errors.name?.message}
-            {...register("name")}
-          />
+        <div className="max-h-[80vh] overflow-y-auto px-6 py-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            {/* Image upload */}
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                Photo (optional)
+              </label>
+              {imagePreview ? (
+                <div className="relative h-40 w-full overflow-hidden rounded-xl border border-gray-200">
+                  <Image
+                    src={imagePreview}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                    unoptimized={imagePreview.startsWith("blob:")}
+                  />
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-brand-400 hover:text-brand-500 transition-colors"
+                >
+                  <ImagePlus className="h-6 w-6" />
+                  <span className="text-sm">Click to upload image</span>
+                  <span className="text-xs">JPG, PNG, WEBP — max 2 MB</span>
+                </button>
+              )}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              {uploadError && <p className="mt-1 text-xs text-red-500">{uploadError}</p>}
+            </div>
 
-          <Textarea
-            label="Description (optional)"
-            placeholder="Short description of the item"
-            error={errors.description?.message}
-            {...register("description")}
-          />
+            <Input
+              label="Item name"
+              placeholder="e.g. Jollof Rice + Chicken"
+              error={errors.name?.message}
+              {...register("name")}
+            />
 
-          <Input
-            label="Price (₦)"
-            type="number"
-            step="0.01"
-            placeholder="1500"
-            error={errors.price?.message}
-            {...register("price", { valueAsNumber: true })}
-          />
+            <Textarea
+              label="Description (optional)"
+              placeholder="Short description of the item"
+              error={errors.description?.message}
+              {...register("description")}
+            />
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700">Category (optional)</label>
-            <select
-              className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-              {...register("category_id")}
-            >
-              <option value="">No category</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
+            <Input
+              label="Price (₦)"
+              type="number"
+              step="0.01"
+              placeholder="1500"
+              error={errors.price?.message}
+              {...register("price", { valueAsNumber: true })}
+            />
 
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input type="checkbox" className="rounded" {...register("is_available")} />
-              Available
-            </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input type="checkbox" className="rounded" {...register("is_featured")} />
-              Featured
-            </label>
-          </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Category (optional)</label>
+              <select
+                className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                {...register("category_id")}
+              >
+                <option value="">No category</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
 
-          <Button type="submit" loading={isSubmitting} className="w-full mt-2">
-            {item ? "Save changes" : "Add item"}
-          </Button>
-        </form>
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                <input type="checkbox" className="rounded" {...register("is_available")} />
+                Available
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                <input type="checkbox" className="rounded" {...register("is_featured")} />
+                Featured
+              </label>
+            </div>
+
+            <Button type="submit" loading={isSubmitting} className="w-full mt-1">
+              {item ? "Save changes" : "Add item"}
+            </Button>
+          </form>
+
+          {/* Delete */}
+          {item && onDeleted && (
+            <div className="mt-4 border-t border-gray-100 pt-4">
+              {!confirmDelete ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete this item
+                </button>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">Are you sure?</span>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
+                  >
+                    {deleting ? "Deleting…" : "Yes, delete"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(false)}
+                    className="text-sm text-gray-400 hover:text-gray-600"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
