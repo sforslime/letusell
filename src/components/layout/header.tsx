@@ -7,7 +7,6 @@ import { useState } from "react";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { CartDrawer } from "@/components/cart/cart-drawer";
 import { siteConfig } from "@/config/site";
 import { useRouter } from "next/navigation";
 
@@ -24,8 +23,7 @@ export function Header() {
   }
 
   return (
-    <>
-      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
           {/* Logo */}
           <Link href="/" className="flex items-center">
@@ -130,9 +128,6 @@ export function Header() {
             </nav>
           </div>
         )}
-      </header>
-
-      <CartDrawer />
-    </>
+    </header>
   );
 }
