@@ -106,8 +106,8 @@ export default async function VendorStorefront({ params }: PageProps) {
       <Header />
 
       <main>
-        {/* Banner */}
-        <div className="relative h-52 w-full bg-gradient-to-br from-brand-400 to-brand-600 sm:h-64">
+        {/* Banner with vendor identity overlaid at bottom */}
+        <div className="relative h-52 w-full bg-gradient-to-br from-brand-500 to-brand-800 sm:h-64">
           {vendor.banner_url && (
             <Image
               src={vendor.banner_url}
@@ -118,67 +118,71 @@ export default async function VendorStorefront({ params }: PageProps) {
               sizes="100vw"
             />
           )}
-          <div className="absolute inset-0 bg-black/30" />
-        </div>
+          {/* Gradient overlay — stronger at bottom for text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-        {/* Vendor info card */}
-        <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <div className="-mt-16 mb-6 rounded-2xl bg-white p-5 shadow-md">
-            <div className="flex items-start gap-4">
-              {/* Logo */}
-              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-gray-100 bg-gray-100">
+          {/* Vendor name + logo inside banner, anchored to bottom */}
+          <div className="absolute bottom-0 left-0 right-0 px-4 pb-5 sm:px-6">
+            <div className="mx-auto max-w-4xl flex items-end gap-4">
+              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border-2 border-white bg-white shadow-lg">
                 {vendor.logo_url ? (
                   <Image src={vendor.logo_url} alt={`${vendor.name} logo`} fill className="object-cover" />
                 ) : (
                   <div className="flex h-full items-center justify-center text-2xl">🍽️</div>
                 )}
               </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-start gap-2">
-                  <h1 className="text-xl font-bold text-gray-900">{vendor.name}</h1>
+              <div className="pb-0.5 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-extrabold text-white tracking-tight">{vendor.name}</h1>
                   <VendorStatusBadge vendor={vendor as Vendor} />
                 </div>
                 {vendor.description && (
-                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">{vendor.description}</p>
+                  <p className="mt-0.5 text-sm text-white/70 line-clamp-1">{vendor.description}</p>
                 )}
-
-                <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
-                  {vendor.rating > 0 && (
-                    <span className="flex items-center gap-1">
-                      <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                      {vendor.rating.toFixed(1)} ({vendor.review_count} reviews)
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    ~{vendor.avg_prep_time} min prep
-                  </span>
-                  {vendor.location_text && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5" />
-                      {vendor.location_text}
-                    </span>
-                  )}
-                  {vendor.phone && (
-                    <span className="flex items-center gap-1">
-                      <Phone className="h-3.5 w-3.5" />
-                      {vendor.phone}
-                    </span>
-                  )}
-                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Menu */}
-          <div className="pb-24">
-            <h2 className="mb-5 text-lg font-bold text-gray-900">Menu</h2>
+        {/* Info strip */}
+        <div className="border-b border-gray-100 bg-white shadow-sm">
+          <div className="mx-auto max-w-4xl px-4 py-3 sm:px-6">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-gray-500">
+              {vendor.rating > 0 && (
+                <span className="flex items-center gap-1">
+                  <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                  <span className="font-semibold text-gray-700">{vendor.rating.toFixed(1)}</span>
+                  <span>({vendor.review_count} reviews)</span>
+                </span>
+              )}
+              <span className="flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5 text-gray-400" />
+                ~{vendor.avg_prep_time} min prep
+              </span>
+              {vendor.location_text && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5 text-gray-400" />
+                  {vendor.location_text}
+                </span>
+              )}
+              {vendor.phone && (
+                <span className="flex items-center gap-1">
+                  <Phone className="h-3.5 w-3.5 text-gray-400" />
+                  {vendor.phone}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
 
-            {byCategory.length === 0 && uncategorized.length === 0 && (
-              <p className="py-10 text-center text-gray-500">No menu items available.</p>
-            )}
-
+        {/* Menu */}
+        <div className="mx-auto max-w-4xl px-4 py-8 pb-24 sm:px-6">
+          {byCategory.length === 0 && uncategorized.length === 0 ? (
+            <div className="py-16 text-center text-gray-400">
+              <p className="text-lg font-medium">No menu items available yet.</p>
+              <p className="mt-1 text-sm">Check back soon.</p>
+            </div>
+          ) : (
             <div className="flex flex-col gap-8">
               {byCategory.map(({ category, items }) => (
                 <MenuSection
@@ -196,7 +200,7 @@ export default async function VendorStorefront({ params }: PageProps) {
                 />
               )}
             </div>
-          </div>
+          )}
         </div>
       </main>
 
