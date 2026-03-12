@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { siteConfig } from "@/config/site";
 import { Providers } from "@/components/layout/providers";
@@ -26,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-50 text-gray-900 antialiased">
+        <Script src="https://js.paystack.co/v1/inline.js" strategy="beforeInteractive" />
         <Providers>{children}</Providers>
       </body>
     </html>

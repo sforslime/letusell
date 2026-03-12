@@ -92,7 +92,7 @@ export default function CheckoutPage() {
     }
   }
 
-  function handlePaymentSuccess() {
+  function handlePaymentSuccess(_reference?: string) {
     if (orderId) {
       try {
         const existing = JSON.parse(localStorage.getItem("letusell-recent-orders") ?? "[]");
@@ -175,6 +175,7 @@ export default function CheckoutPage() {
                 </p>
                 <PaystackButton
                   accessCode={initData.accessCode}
+                  email={customerEmail}
                   amount={initData.amount}
                   onSuccess={handlePaymentSuccess}
                   onClose={handlePaymentClose}

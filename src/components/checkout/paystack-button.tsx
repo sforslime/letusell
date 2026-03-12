@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { formatNGN } from "@/lib/utils/currency";
-import { koboToNaira } from "@/lib/utils/currency";
+import { formatNGN, koboToNaira } from "@/lib/utils/currency";
 
 interface PaystackButtonProps {
   accessCode: string;
+  email: string;
   amount: number; // kobo
-  onSuccess: () => void;
+  onSuccess: (reference: string) => void;
   onClose: () => void;
   disabled?: boolean;
   loading?: boolean;
@@ -17,14 +16,13 @@ interface PaystackButtonProps {
 declare global {
   interface Window {
     PaystackPop?: {
-      setup: (config: {
+      setup: (options: {
         key: string;
-        email?: string;
-        amount?: number;
-        access_code?: string;
-        onSuccess?: () => void;
-        onClose?: () => void;
-        [key: string]: unknown;
+        email: string;
+        amount: number;
+        access_code: string;
+        callback: (response: { reference: string }) => void;
+        onClose: () => void;
       }) => { openIframe: () => void };
     };
   }
@@ -32,23 +30,13 @@ declare global {
 
 export function PaystackButton({
   accessCode,
+  email,
   amount,
   onSuccess,
   onClose,
   disabled,
   loading,
 }: PaystackButtonProps) {
-  const scriptLoaded = useRef(false);
-
-  useEffect(() => {
-    if (scriptLoaded.current) return;
-    const script = document.createElement("script");
-    script.src = "https://js.paystack.co/v1/inline.js";
-    script.async = true;
-    document.head.appendChild(script);
-    scriptLoaded.current = true;
-  }, []);
-
   function handlePay() {
     if (!window.PaystackPop) {
       alert("Paystack failed to load. Please refresh and try again.");
@@ -61,18 +49,19 @@ export function PaystackButton({
       return;
     }
 
-    try {
-      const handler = window.PaystackPop.setup({
-        key,
-        access_code: accessCode,
-        onSuccess: () => onSuccess(),
-        onClose: () => { onClose(); },
-      });
-      handler.openIframe();
-    } catch (err) {
-      console.error("Paystack setup error:", err);
-      alert("Could not open payment. Please try again.");
-    }
+    const handler = window.PaystackPop.setup({
+      key,
+      email,
+      amount,
+      access_code: accessCode,
+      callback(response) {
+        onSuccess(response.reference);
+      },
+      onClose() {
+        onClose();
+      },
+    });
+    handler.openIframe();
   }
 
   return (
