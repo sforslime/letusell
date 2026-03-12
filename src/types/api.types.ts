@@ -8,6 +8,7 @@ export interface CheckoutInitializeRequest {
     phone?: string;
   };
   vendorId: string;
+  pickupTime?: string;
   notes?: string;
 }
 

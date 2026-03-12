@@ -1,21 +1,24 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/validations/checkout.schema";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { PickupTimeSelector } from "./pickup-time-selector";
 
 interface CheckoutFormProps {
+  vendorSlug: string;
   onSubmit: (values: CheckoutFormValues) => void;
   isSubmitting: boolean;
-  children: React.ReactNode; // Payment button slot
+  children: React.ReactNode;
 }
 
-export function CheckoutForm({ onSubmit, isSubmitting, children }: CheckoutFormProps) {
+export function CheckoutForm({ vendorSlug, onSubmit, isSubmitting, children }: CheckoutFormProps) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -24,7 +27,7 @@ export function CheckoutForm({ onSubmit, isSubmitting, children }: CheckoutFormP
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
       <div>
-        <h2 className="text-base font-bold text-gray-900 mb-3">Your details</h2>
+        <h2 className="mb-3 text-base font-bold text-gray-900">Your details</h2>
         <div className="flex flex-col gap-3">
           <Input
             label="Full name"
@@ -47,6 +50,24 @@ export function CheckoutForm({ onSubmit, isSubmitting, children }: CheckoutFormP
             {...register("phone")}
           />
         </div>
+      </div>
+
+      <div>
+        <h2 className="mb-3 text-base font-bold text-gray-900">Pickup time</h2>
+        <Controller
+          control={control}
+          name="pickupTime"
+          render={({ field }) => (
+            <PickupTimeSelector
+              vendorSlug={vendorSlug}
+              value={field.value}
+              onChange={field.onChange}
+            />
+          )}
+        />
+        {errors.pickupTime && (
+          <p className="mt-1.5 text-xs text-red-500">{errors.pickupTime.message}</p>
+        )}
       </div>
 
       <div>

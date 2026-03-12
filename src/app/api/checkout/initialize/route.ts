@@ -8,7 +8,7 @@ import type { CheckoutInitializeRequest } from "@/types/api.types";
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as CheckoutInitializeRequest;
-    const { cart, customer, vendorId, notes } = body;
+    const { cart, customer, vendorId, pickupTime, notes } = body;
 
     if (!cart?.length || !customer?.email || !customer?.name || !vendorId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -77,9 +77,9 @@ export async function POST(req: NextRequest) {
       userId = user?.id ?? null;
     }
 
-    // Auto-calculate pickup time: now + vendor's avg prep time
+    // Use user-selected pickup time, or fall back to now + vendor prep time
     const prepMins = vendor.avg_prep_time ?? 15;
-    const pickupTime = new Date(Date.now() + prepMins * 60_000).toISOString();
+    const resolvedPickupTime = pickupTime ?? new Date(Date.now() + prepMins * 60_000).toISOString();
 
     // Create order row
     const { data: order, error: orderError } = await admin
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
         amount_kobo: amountKobo,
         status: "awaiting_payment",
         payment_status: "pending",
-        pickup_time: pickupTime,
+        pickup_time: resolvedPickupTime,
         notes: notes ?? null,
       })
       .select("id")

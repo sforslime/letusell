@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -73,6 +71,7 @@ export default function CheckoutPage() {
             phone: values.phone || undefined,
           },
           vendorId,
+          pickupTime: values.pickupTime,
           notes: values.notes || undefined,
         }),
       });
@@ -132,6 +131,7 @@ export default function CheckoutPage() {
             {!initData ? (
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
                 <CheckoutForm
+                  vendorSlug={vendorSlug ?? ""}
                   onSubmit={handleFormSubmit}
                   isSubmitting={isInitializing}
                 >
