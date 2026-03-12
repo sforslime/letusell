@@ -7,7 +7,6 @@ import { koboToNaira } from "@/lib/utils/currency";
 
 interface PaystackButtonProps {
   accessCode: string;
-  email: string;
   amount: number; // kobo
   onSuccess: () => void;
   onClose: () => void;
@@ -33,7 +32,6 @@ declare global {
 
 export function PaystackButton({
   accessCode,
-  email,
   amount,
   onSuccess,
   onClose,
@@ -66,11 +64,9 @@ export function PaystackButton({
     try {
       const handler = window.PaystackPop.setup({
         key,
-        email,
-        amount,
         access_code: accessCode,
-        onSuccess,
-        onClose,
+        onSuccess: () => onSuccess(),
+        onClose: () => { onClose(); },
       });
       handler.openIframe();
     } catch (err) {

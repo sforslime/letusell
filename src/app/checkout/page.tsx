@@ -175,7 +175,6 @@ export default function CheckoutPage() {
                 </p>
                 <PaystackButton
                   accessCode={initData.accessCode}
-                  email={customerEmail}
                   amount={initData.amount}
                   onSuccess={handlePaymentSuccess}
                   onClose={handlePaymentClose}
