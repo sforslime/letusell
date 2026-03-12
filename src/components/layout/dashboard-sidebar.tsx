@@ -81,8 +81,8 @@ export function DashboardSidebar({ links, title, vendorName }: DashboardSidebarP
         {navLinks}
       </aside>
 
-      {/* Mobile top bar */}
-      <div className="flex h-14 items-center justify-between border-b border-gray-100 bg-white px-4 md:hidden">
+      {/* Mobile top bar — fixed so it doesn't participate in the flex row */}
+      <div className="fixed left-0 right-0 top-0 z-40 flex h-14 items-center justify-between border-b border-gray-100 bg-white px-4 md:hidden">
         <Link href="/">
           <div className="relative h-7 w-28 overflow-hidden">
             <Image src="/logo.png" alt={title} fill className="object-cover object-center" />

@@ -12,7 +12,7 @@ export default async function DashboardLayout({
   if (!user) redirect("/auth/login?next=/dashboard/vendor");
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-14 md:pt-0">
       {children}
     </div>
   );

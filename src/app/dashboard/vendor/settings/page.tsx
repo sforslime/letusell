@@ -8,9 +8,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { ExternalLink, Store } from "lucide-react";
+import { ExternalLink, LayoutDashboard, UtensilsCrossed, ShoppingBag, Settings, Store } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import type { Vendor } from "@/types/database.types";
+
+const navLinks = vendorDashboardLinks.map((link, i) => ({
+  ...link,
+  icon: [
+    <LayoutDashboard key={0} className="h-4 w-4" />,
+    <UtensilsCrossed key={1} className="h-4 w-4" />,
+    <ShoppingBag key={2} className="h-4 w-4" />,
+    <Settings key={3} className="h-4 w-4" />,
+  ][i],
+}));
 
 export default function VendorSettingsPage() {
   const supabase = getSupabaseBrowserClient();
@@ -62,7 +72,7 @@ export default function VendorSettingsPage() {
   if (!vendor) {
     return (
       <div className="flex min-h-screen">
-        <DashboardSidebar links={vendorDashboardLinks} title="Vendor" />
+        <DashboardSidebar links={navLinks} title="Vendor" />
         <div className="flex flex-1 items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-brand-500" />
         </div>
@@ -72,7 +82,7 @@ export default function VendorSettingsPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <DashboardSidebar links={vendorDashboardLinks} title="Vendor" vendorName={vendor.name} />
+      <DashboardSidebar links={navLinks} title="Vendor" vendorName={vendor.name} />
       <main className="flex-1 p-6">
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="mt-1 mb-6 text-sm text-gray-500">

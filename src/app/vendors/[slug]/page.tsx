@@ -5,6 +5,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { VendorStatusBadge } from "@/components/vendor/vendor-status-badge";
+import { StickyCartBar } from "@/components/vendor/sticky-cart-bar";
 import { MenuSection } from "@/components/menu/menu-section";
 import { MapPin, Clock, Star, Phone } from "lucide-react";
 import Image from "next/image";
@@ -204,6 +205,7 @@ export default async function VendorStorefront({ params }: PageProps) {
         </div>
       </main>
 
+      <StickyCartBar vendorId={vendor.id} />
       <Footer />
     </div>
   );
