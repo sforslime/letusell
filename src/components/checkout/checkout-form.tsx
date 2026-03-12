@@ -1,24 +1,21 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/validations/checkout.schema";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PickupTimeSelector } from "./pickup-time-selector";
 
 interface CheckoutFormProps {
-  vendorSlug: string;
   onSubmit: (values: CheckoutFormValues) => void;
   isSubmitting: boolean;
   children: React.ReactNode;
 }
 
-export function CheckoutForm({ vendorSlug, onSubmit, isSubmitting, children }: CheckoutFormProps) {
+export function CheckoutForm({ onSubmit, isSubmitting, children }: CheckoutFormProps) {
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -50,24 +47,6 @@ export function CheckoutForm({ vendorSlug, onSubmit, isSubmitting, children }: C
             {...register("phone")}
           />
         </div>
-      </div>
-
-      <div>
-        <h2 className="mb-3 text-base font-bold text-gray-900">Pickup time</h2>
-        <Controller
-          control={control}
-          name="pickupTime"
-          render={({ field }) => (
-            <PickupTimeSelector
-              vendorSlug={vendorSlug}
-              value={field.value}
-              onChange={field.onChange}
-            />
-          )}
-        />
-        {errors.pickupTime && (
-          <p className="mt-1.5 text-xs text-red-500">{errors.pickupTime.message}</p>
-        )}
       </div>
 
       <div>
