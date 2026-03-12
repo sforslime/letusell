@@ -145,7 +145,7 @@ export default function CheckoutPage() {
           <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr,380px]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
           {/* Left: form */}
           <div>
             {!initData ? (
