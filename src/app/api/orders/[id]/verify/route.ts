@@ -31,8 +31,11 @@ export async function POST(
   // Ask Paystack directly
   let txn;
   try {
+    console.log("[verify] ref:", order.paystack_reference, "order:", order.id);
     txn = await verifyTransaction(order.paystack_reference);
-  } catch {
+    console.log("[verify] Paystack status:", txn.status, "amount:", txn.amount);
+  } catch (err) {
+    console.error("[verify] Paystack API error:", err);
     return NextResponse.json({ status: order.payment_status });
   }
 

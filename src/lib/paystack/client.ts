@@ -30,7 +30,7 @@ export interface PaystackInitParams {
   email: string;
   amount: number; // kobo
   reference: string;
-  callback_url: string;
+  callback_url?: string;
   metadata?: Record<string, unknown>;
 }
 

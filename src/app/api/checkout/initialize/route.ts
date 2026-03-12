@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { initializeTransaction } from "@/lib/paystack/client";
 import { nairaToKobo } from "@/lib/utils/currency";
-import { siteConfig } from "@/config/site";
 import type { CheckoutInitializeRequest } from "@/types/api.types";
 
 export async function POST(req: NextRequest) {
@@ -117,12 +116,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Initialize Paystack transaction
-    const callbackUrl = `${siteConfig.url}/checkout/success?order_id=${order.id}`;
+    // No callback_url — we use inline popup with JS callback, not redirect flow
     const txn = await initializeTransaction({
       email: customer.email,
       amount: amountKobo,
       reference: order.id,
-      callback_url: callbackUrl,
       metadata: { order_id: order.id, customer_name: customer.name },
     });
 
