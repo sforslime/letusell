@@ -1,6 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import type { Vendor } from "@/types/database.types";
 
+function formatTime(time: string) {
+  const [h, m] = time.split(":").map(Number);
+  const suffix = h >= 12 ? "PM" : "AM";
+  const hour = h % 12 || 12;
+  return m === 0 ? `${hour} ${suffix}` : `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
+}
+
 export function VendorStatusBadge({ vendor }: { vendor: Vendor }) {
   if (!vendor.opens_at || !vendor.closes_at) {
     return <Badge variant="success">Open</Badge>;
@@ -14,7 +21,9 @@ export function VendorStatusBadge({ vendor }: { vendor: Vendor }) {
 
   return (
     <Badge variant={open ? "success" : "destructive"}>
-      {open ? `Open · Closes ${vendor.closes_at}` : `Closed · Opens ${vendor.opens_at}`}
+      {open
+        ? `Open · Closes ${formatTime(vendor.closes_at)}`
+        : `Closed · Opens ${formatTime(vendor.opens_at)}`}
     </Badge>
   );
 }
