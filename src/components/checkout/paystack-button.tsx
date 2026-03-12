@@ -66,8 +66,6 @@ export function PaystackButton({
     try {
       const handler = window.PaystackPop.setup({
         key,
-        email,
-        amount,
         access_code: accessCode,
         onSuccess,
         onClose,
