@@ -27,6 +27,7 @@ export default function CheckoutPage() {
   const [customerEmail, setCustomerEmail] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const total = getTotal();
 
   if (items.length === 0) {
@@ -105,9 +106,29 @@ export default function CheckoutPage() {
     clearCart();
   }
 
-  function handlePaymentClose() {
-    // User closed Paystack popup — order was created but not paid
-    // It will remain as awaiting_payment
+  async function handlePaymentClose() {
+    if (!orderId) {
+      setInitData(null);
+      return;
+    }
+
+    // onSuccess may not fire (Paystack popup redirects iframe internally).
+    // Verify with our API to detect success on close.
+    setIsVerifying(true);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/verify`, { method: "POST" });
+      const data = await res.json();
+      if (data.status === "paid") {
+        handlePaymentSuccess();
+        return;
+      }
+    } catch {
+      // Verify failed — fall through to reset
+    } finally {
+      setIsVerifying(false);
+    }
+
+    // Payment not confirmed — reset so user can retry
     setInitData(null);
   }
 
@@ -142,6 +163,10 @@ export default function CheckoutPage() {
                     Continue to payment
                   </Button>
                 </CheckoutForm>
+              </div>
+            ) : isVerifying ? (
+              <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm text-center">
+                <p className="text-sm text-gray-600">Verifying payment...</p>
               </div>
             ) : (
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm text-center">
