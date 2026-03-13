@@ -1,10 +1,14 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { adminDashboardLinks } from "@/config/nav";
 import { formatNGN, koboToNaira } from "@/lib/utils/currency";
+import { DateRangeFilter } from "@/components/admin/date-range-filter";
+import { RevenueChart } from "@/components/admin/revenue-chart";
+import type { RevenueDataPoint } from "@/components/admin/revenue-chart";
 import { LayoutDashboard, Store, ShoppingBag, BarChart2, TrendingUp, Award } from "lucide-react";
 
 export const metadata: Metadata = { title: "Analytics" };
@@ -20,7 +24,84 @@ const navLinks = adminDashboardLinks.map((link, i) => ({
   ][i],
 }));
 
-export default async function AdminAnalyticsPage() {
+const RANGE_DAYS: Record<string, number | null> = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+  "all": null,
+};
+
+function getFromDate(range: string): string | null {
+  const days = RANGE_DAYS[range] ?? 30;
+  if (days === null) return null;
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+function buildDailySeries(
+  orders: { amount_kobo: number; created_at: string }[],
+  fromDate: Date,
+  toDate: Date
+): RevenueDataPoint[] {
+  const map = new Map<string, { revenue: number; orders: number }>();
+
+  // Fill every day in range with 0
+  const cursor = new Date(fromDate);
+  cursor.setHours(0, 0, 0, 0);
+  while (cursor <= toDate) {
+    const key = cursor.toISOString().slice(0, 10);
+    map.set(key, { revenue: 0, orders: 0 });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  for (const o of orders) {
+    const key = o.created_at.slice(0, 10);
+    const existing = map.get(key);
+    if (existing) {
+      existing.revenue += koboToNaira(o.amount_kobo);
+      existing.orders += 1;
+    }
+  }
+
+  return [...map.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([dateStr, v]) => {
+      const d = new Date(dateStr + "T00:00:00");
+      const label = d.toLocaleDateString("en-NG", { month: "short", day: "numeric" });
+      return { label, revenue: v.revenue, orders: v.orders };
+    });
+}
+
+function buildMonthlySeries(
+  orders: { amount_kobo: number; created_at: string }[]
+): RevenueDataPoint[] {
+  const map = new Map<string, { revenue: number; orders: number }>();
+
+  for (const o of orders) {
+    const key = o.created_at.slice(0, 7); // YYYY-MM
+    const existing = map.get(key) ?? { revenue: 0, orders: 0 };
+    existing.revenue += koboToNaira(o.amount_kobo);
+    existing.orders += 1;
+    map.set(key, existing);
+  }
+
+  return [...map.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, v]) => {
+      const [year, month] = key.split("-").map(Number);
+      const d = new Date(year, month - 1, 1);
+      const label = d.toLocaleDateString("en-NG", { month: "short", year: "2-digit" });
+      return { label, revenue: v.revenue, orders: v.orders };
+    });
+}
+
+interface PageProps {
+  searchParams: Promise<{ range?: string }>;
+}
+
+export default async function AdminAnalyticsPage({ searchParams }: PageProps) {
   const supabase = await getSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
@@ -28,17 +109,30 @@ export default async function AdminAnalyticsPage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "admin") redirect("/");
 
+  const { range: rawRange } = await searchParams;
+  const range = rawRange && rawRange in RANGE_DAYS ? rawRange : "30d";
+  const fromDate = getFromDate(range);
+
   const admin = getSupabaseAdminClient();
 
+  let paidQuery = admin
+    .from("orders")
+    .select("amount_kobo, vendor_id, created_at, vendors(name)")
+    .eq("payment_status", "paid");
+
+  let allQuery = admin
+    .from("orders")
+    .select("status, created_at")
+    .neq("status", "awaiting_payment");
+
+  if (fromDate) {
+    paidQuery = paidQuery.gte("created_at", fromDate);
+    allQuery = allQuery.gte("created_at", fromDate);
+  }
+
   const [{ data: paidOrders }, { data: allOrders }] = await Promise.all([
-    admin
-      .from("orders")
-      .select("amount_kobo, vendor_id, created_at, vendors(name)")
-      .eq("payment_status", "paid"),
-    admin
-      .from("orders")
-      .select("status")
-      .neq("status", "awaiting_payment"),
+    paidQuery,
+    allQuery,
   ]);
 
   const totalRevenue = (paidOrders ?? []).reduce((sum, o) => sum + koboToNaira(o.amount_kobo), 0);
@@ -47,7 +141,18 @@ export default async function AdminAnalyticsPage() {
   const completedCount = (allOrders ?? []).filter((o) => o.status === "completed").length;
   const cancelledCount = (allOrders ?? []).filter((o) => o.status === "cancelled").length;
 
-  // Top vendors by revenue
+  // Chart data
+  const now = new Date();
+  const chartData: RevenueDataPoint[] =
+    range === "all"
+      ? buildMonthlySeries(paidOrders ?? [])
+      : buildDailySeries(
+          paidOrders ?? [],
+          new Date(fromDate!),
+          now
+        );
+
+  // Top vendors
   const vendorMap = new Map<string, { name: string; count: number; revenue: number }>();
   (paidOrders ?? []).forEach((o) => {
     const name = (o.vendors as unknown as { name: string } | null)?.name ?? o.vendor_id;
@@ -61,13 +166,26 @@ export default async function AdminAnalyticsPage() {
   const topVendors = [...vendorMap.values()].sort((a, b) => b.revenue - a.revenue).slice(0, 10);
   const maxRevenue = topVendors[0]?.revenue ?? 1;
 
+  const rangeLabel: Record<string, string> = {
+    "7d": "Last 7 days",
+    "30d": "Last 30 days",
+    "90d": "Last 90 days",
+    "all": "All time",
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <DashboardSidebar links={navLinks} title="Admin" />
       <main className="flex-1 overflow-auto p-6 lg:p-8">
-        <div className="mb-7">
-          <h1 className="text-2xl font-extrabold text-gray-900">Analytics</h1>
-          <p className="mt-1 text-sm text-gray-500">Platform performance overview</p>
+        {/* Header + filter */}
+        <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-extrabold text-gray-900">Analytics</h1>
+            <p className="mt-1 text-sm text-gray-500">Platform performance — {rangeLabel[range]}</p>
+          </div>
+          <Suspense>
+            <DateRangeFilter active={range} />
+          </Suspense>
         </div>
 
         {/* Summary stats */}
@@ -117,6 +235,12 @@ export default async function AdminAnalyticsPage() {
           ))}
         </div>
 
+        {/* Revenue trend chart */}
+        <div className="mb-8 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+          <h2 className="mb-4 text-lg font-bold text-gray-900">Revenue over time</h2>
+          <RevenueChart data={chartData} />
+        </div>
+
         {/* Top vendors */}
         <div>
           <h2 className="mb-4 text-lg font-bold text-gray-900">Top vendors by revenue</h2>
@@ -127,7 +251,6 @@ export default async function AdminAnalyticsPage() {
               <div className="divide-y divide-gray-50">
                 {topVendors.map((v, i) => (
                   <div key={i} className="flex items-center gap-5 px-5 py-4 hover:bg-gray-50/50">
-                    {/* Rank */}
                     <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-sm font-bold ${
                       i === 0 ? "bg-yellow-100 text-yellow-700" :
                       i === 1 ? "bg-gray-100 text-gray-600" :
@@ -136,8 +259,6 @@ export default async function AdminAnalyticsPage() {
                     }`}>
                       {i + 1}
                     </div>
-
-                    {/* Name + bar */}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between mb-1.5">
                         <p className="font-semibold text-gray-900 truncate">{v.name}</p>
@@ -146,7 +267,6 @@ export default async function AdminAnalyticsPage() {
                           <span className="font-bold text-gray-900">{formatNGN(v.revenue)}</span>
                         </div>
                       </div>
-                      {/* Revenue bar */}
                       <div className="h-1.5 w-full rounded-full bg-gray-100">
                         <div
                           className="h-1.5 rounded-full bg-brand-500"
