@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { adminDashboardLinks } from "@/config/nav";
 import { formatDate } from "@/lib/utils/date";
 import { LayoutDashboard, Store, ShoppingBag, BarChart2, ExternalLink } from "lucide-react";
+import { NewVendorButton } from "@/components/admin/new-vendor-button";
 
 export const metadata: Metadata = { title: "Vendor Management" };
 export const dynamic = "force-dynamic";
@@ -72,9 +73,12 @@ export default async function AdminVendorsPage() {
     <div className="flex min-h-screen bg-gray-50">
       <DashboardSidebar links={navLinks} title="Admin" />
       <main className="flex-1 overflow-auto p-6 lg:p-8">
-        <div className="mb-7">
-          <h1 className="text-2xl font-extrabold text-gray-900">Vendors</h1>
-          <p className="mt-1 text-sm text-gray-500">{vendors?.length ?? 0} total vendors</p>
+        <div className="mb-7 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-extrabold text-gray-900">Vendors</h1>
+            <p className="mt-1 text-sm text-gray-500">{vendors?.length ?? 0} total vendors</p>
+          </div>
+          <NewVendorButton />
         </div>
 
         {/* Summary pills */}
