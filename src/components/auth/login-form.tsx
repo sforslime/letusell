@@ -59,12 +59,23 @@ export function LoginForm() {
             Forgot password?
           </Link>
         </div>
-        <Input
-          type="password"
-          placeholder="••••••••"
-          error={errors.password?.message}
-          {...register("password")}
-        />
+        <div className="relative">
+          <Input
+            type={showPassword ? "text" : "password"}
+            placeholder="••••••••"
+            className="pr-10"
+            error={errors.password?.message}
+            {...register("password")}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
       {error && (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
