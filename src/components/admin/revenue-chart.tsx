@@ -52,8 +52,8 @@ export function RevenueChart({ data }: { data: RevenueDataPoint[] }) {
           width={52}
         />
         <Tooltip
-          formatter={(value: number, name: string) => [
-            name === "revenue" ? formatNGN(value) : value,
+          formatter={(value, name) => [
+            name === "revenue" ? formatNGN(Number(value)) : value,
             name === "revenue" ? "Revenue" : "Orders",
           ]}
           labelStyle={{ fontSize: 12, color: "#374151", fontWeight: 600 }}
