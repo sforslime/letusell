@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, User, Menu, X, LogOut } from "lucide-react";
+import { ShoppingBag, User, Menu, X, LogOut, Store, LayoutDashboard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
@@ -41,16 +41,6 @@ export function Header() {
             <Link href="/vendors" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
               Vendors
             </Link>
-            {user && profile?.role === "vendor" && (
-              <Link href="/dashboard/vendor" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-                Dashboard
-              </Link>
-            )}
-            {user && profile?.role === "admin" && (
-              <Link href="/dashboard/admin" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-                Admin
-              </Link>
-            )}
           </nav>
 
           {/* Right actions */}
@@ -68,6 +58,20 @@ export function Header() {
             {/* Auth */}
             {user ? (
               <div className="hidden items-center gap-2 md:flex">
+                {profile?.role === "vendor" && (
+                  <Link href="/dashboard/vendor">
+                    <Button variant="ghost" size="icon" aria-label="Vendor dashboard">
+                      <Store className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                )}
+                {profile?.role === "admin" && (
+                  <Link href="/dashboard/admin">
+                    <Button variant="ghost" size="icon" aria-label="Admin dashboard">
+                      <LayoutDashboard className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                )}
                 <Link href="/profile">
                   <Button variant="ghost" size="icon" aria-label="My profile">
                     <User className="h-5 w-5" />
@@ -105,12 +109,12 @@ export function Header() {
               </Link>
               {user && profile?.role === "vendor" && (
                 <Link href="/dashboard/vendor" className="text-sm font-medium text-gray-700" onClick={() => setMenuOpen(false)}>
-                  Dashboard
+                  Vendor dashboard
                 </Link>
               )}
               {user && profile?.role === "admin" && (
                 <Link href="/dashboard/admin" className="text-sm font-medium text-gray-700" onClick={() => setMenuOpen(false)}>
-                  Admin
+                  Admin dashboard
                 </Link>
               )}
               {user ? (
