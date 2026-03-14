@@ -54,7 +54,7 @@ export default function HomePage() {
               {siteConfig.universityName}
             </div>
             <h1 className="text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl lg:text-7xl">
-              Campus <CyclingWord />,<br />
+              Campus <CyclingWord /><br />
               <span className="text-brand-200">ordered your way</span>
             </h1>
             <p className="mx-auto mt-5 max-w-lg text-lg leading-relaxed text-white/75">
