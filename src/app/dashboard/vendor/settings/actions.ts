@@ -12,12 +12,12 @@ const settingsSchema = z.object({
     .optional(),
   opens_at: z
     .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Must be HH:MM")
+    .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, "Must be HH:MM")
     .or(z.literal(""))
     .optional(),
   closes_at: z
     .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Must be HH:MM")
+    .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, "Must be HH:MM")
     .or(z.literal(""))
     .optional(),
   avg_prep_time: z.coerce.number().int().min(1).max(120),
@@ -84,8 +84,8 @@ export async function saveVendorSettings(
       ...rest,
       avg_prep_time,
       min_order,
-      opens_at: opens_at || null,
-      closes_at: closes_at || null,
+      opens_at: opens_at ? opens_at.slice(0, 5) : null,
+      closes_at: closes_at ? closes_at.slice(0, 5) : null,
     })
     .eq("id", vendor.id);
 
