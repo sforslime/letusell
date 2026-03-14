@@ -9,6 +9,7 @@ import { VendorCardSkeleton } from "@/components/vendor/vendor-card-skeleton";
 import { CategoryPills } from "@/components/marketplace/category-pills";
 import { SearchBar } from "@/components/marketplace/search-bar";
 import { siteConfig } from "@/config/site";
+import { CyclingWord } from "@/components/ui/cycling-word";
 import type { Vendor } from "@/types/database.types";
 
 export const revalidate = 300; // ISR every 5 minutes
@@ -53,7 +54,7 @@ export default function HomePage() {
               {siteConfig.universityName}
             </div>
             <h1 className="text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl lg:text-7xl">
-              Campus food,<br />
+              Campus <CyclingWord />,<br />
               <span className="text-brand-200">ordered your way</span>
             </h1>
             <p className="mx-auto mt-5 max-w-lg text-lg leading-relaxed text-white/75">
