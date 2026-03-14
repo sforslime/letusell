@@ -22,10 +22,16 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh session (important for Supabase SSR)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Refresh session — wrapped to handle "lock stolen" AbortError from
+  // concurrent requests (Next.js parallel rendering / prefetching).
+  // If the lock is stolen, the other request refreshed the token — treat as unauthenticated.
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (err) {
+    if (!(err instanceof Error && err.name === "AbortError")) throw err;
+  }
 
   const pathname = request.nextUrl.pathname;
 
