@@ -26,6 +26,7 @@ export function Footer() {
               <Link href="/vendors" className="hover:text-brand-600 transition-colors">Browse vendors</Link>
               <Link href="/auth/signup" className="hover:text-brand-600 transition-colors">Create account</Link>
               <Link href="/auth/login" className="hover:text-brand-600 transition-colors">Sign in</Link>
+              <Link href="/help" className="hover:text-brand-600 transition-colors">Help & Contact</Link>
             </div>
           </div>
 
