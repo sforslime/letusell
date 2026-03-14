@@ -11,7 +11,10 @@ import { formatDate } from "@/lib/utils/date";
 import { Star, ShoppingBag, TrendingUp, ArrowRight, Package } from "lucide-react";
 import type { OrderStatus } from "@/types/database.types";
 
-export const metadata: Metadata = { title: "My Profile" };
+export const metadata: Metadata = {
+  title: "My Profile",
+  robots: { index: false },
+};
 export const dynamic = "force-dynamic";
 
 function getInitials(name: string | null, email: string): string {

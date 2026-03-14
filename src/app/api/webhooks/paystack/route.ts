@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Verify amount matches
-  if (paidAmountKobo < order.amount_kobo) {
+  if (paidAmountKobo !== order.amount_kobo) {
     console.error(
       `Webhook: Amount mismatch for ${reference}. Expected ${order.amount_kobo}, got ${paidAmountKobo}`
     );

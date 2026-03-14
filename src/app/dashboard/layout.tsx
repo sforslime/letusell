@@ -1,5 +1,11 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: { default: "Dashboard", template: "%s | Dashboard | LetuSell" },
+  robots: { index: false },
+};
 
 export default async function DashboardLayout({
   children,

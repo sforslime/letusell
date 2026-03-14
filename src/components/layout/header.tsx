@@ -56,7 +56,7 @@ export function Header() {
           {/* Right actions */}
           <div className="flex items-center gap-2">
             {/* Cart button — opens drawer */}
-            <Button variant="ghost" size="icon" className="relative" onClick={openDrawer}>
+            <Button variant="ghost" size="icon" className="relative" onClick={openDrawer} aria-label="Open cart">
               <ShoppingBag className="h-5 w-5" />
               {itemCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
@@ -69,11 +69,11 @@ export function Header() {
             {user ? (
               <div className="hidden items-center gap-2 md:flex">
                 <Link href="/profile">
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" aria-label="My profile">
                     <User className="h-5 w-5" />
                   </Button>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={handleSignOut}>
+                <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out">
                   <LogOut className="h-5 w-5" />
                 </Button>
               </div>
@@ -89,6 +89,7 @@ export function Header() {
               size="icon"
               className="md:hidden"
               onClick={() => setMenuOpen(!menuOpen)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>

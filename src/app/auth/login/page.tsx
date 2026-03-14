@@ -6,7 +6,10 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 import { LoginForm } from "@/components/auth/login-form";
 
-export const metadata: Metadata = { title: "Sign in" };
+export const metadata: Metadata = {
+  title: "Sign in",
+  description: "Sign in to your LetuSell account to order food from campus vendors.",
+};
 
 export default function LoginPage() {
   return (

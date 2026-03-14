@@ -1,12 +1,26 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export interface CreateVendorState {
   error?: string;
   success?: boolean;
 }
+
+const createVendorSchema = z.object({
+  name: z.string().min(1, "Vendor name is required.").max(100),
+  slug: z.string().max(100).optional(),
+  category: z.enum(["local_food", "fast_food", "snacks", "drinks", "pastries", "other"]).default("other"),
+  description: z.string().max(500).optional(),
+  location_text: z.string().max(200).optional(),
+  phone: z.string().regex(/^\+?[\d\s()-]{7,20}$/, "Invalid phone number.").optional().or(z.literal("")),
+  opens_at: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Invalid time format (HH:MM).").optional().or(z.literal("")),
+  closes_at: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Invalid time format (HH:MM).").optional().or(z.literal("")),
+  avg_prep_time: z.coerce.number().int().min(1).max(120).default(15),
+  owner_email: z.string().email("Invalid email address.").optional().or(z.literal("")),
+});
 
 function slugify(str: string): string {
   return str
@@ -22,18 +36,32 @@ export async function createVendor(
   _prev: CreateVendorState,
   formData: FormData
 ): Promise<CreateVendorState> {
-  const name = (formData.get("name") as string)?.trim();
-  const slugInput = (formData.get("slug") as string)?.trim();
-  const category = (formData.get("category") as string)?.trim() || "other";
-  const description = (formData.get("description") as string)?.trim() || null;
-  const location_text = (formData.get("location_text") as string)?.trim() || null;
-  const phone = (formData.get("phone") as string)?.trim() || null;
-  const opens_at = (formData.get("opens_at") as string)?.trim() || null;
-  const closes_at = (formData.get("closes_at") as string)?.trim() || null;
-  const avg_prep_time = parseInt(formData.get("avg_prep_time") as string) || 15;
-  const owner_email = (formData.get("owner_email") as string)?.trim() || null;
+  const raw = {
+    name: (formData.get("name") as string)?.trim(),
+    slug: (formData.get("slug") as string)?.trim() || undefined,
+    category: (formData.get("category") as string)?.trim() || "other",
+    description: (formData.get("description") as string)?.trim() || undefined,
+    location_text: (formData.get("location_text") as string)?.trim() || undefined,
+    phone: (formData.get("phone") as string)?.trim() || "",
+    opens_at: (formData.get("opens_at") as string)?.trim() || "",
+    closes_at: (formData.get("closes_at") as string)?.trim() || "",
+    avg_prep_time: formData.get("avg_prep_time") as string,
+    owner_email: (formData.get("owner_email") as string)?.trim() || "",
+  };
 
-  if (!name) return { error: "Vendor name is required." };
+  const parsed = createVendorSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.errors[0].message };
+  }
+
+  const { name, category, avg_prep_time } = parsed.data;
+  const slugInput = parsed.data.slug;
+  const description = parsed.data.description || null;
+  const location_text = parsed.data.location_text || null;
+  const phone = parsed.data.phone || null;
+  const opens_at = parsed.data.opens_at || null;
+  const closes_at = parsed.data.closes_at || null;
+  const owner_email = parsed.data.owner_email || null;
 
   const admin = getSupabaseAdminClient();
 

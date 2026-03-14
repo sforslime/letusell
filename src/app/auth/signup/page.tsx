@@ -6,7 +6,10 @@ export const dynamic = "force-dynamic";
 
 import { SignupForm } from "@/components/auth/signup-form";
 
-export const metadata: Metadata = { title: "Create account" };
+export const metadata: Metadata = {
+  title: "Create account",
+  description: "Create a free LetuSell account to order food and earn loyalty points.",
+};
 
 export default function SignupPage() {
   return (
