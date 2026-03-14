@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyPaystackSignature } from "@/lib/paystack/verify";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { sendWhatsAppOrderNotification } from "@/lib/whatsapp/client";
 
 export async function POST(req: NextRequest) {
   const signature = req.headers.get("x-paystack-signature") ?? "";
@@ -39,7 +40,12 @@ export async function POST(req: NextRequest) {
   // Fetch the order by paystack_reference
   const { data: order } = await admin
     .from("orders")
-    .select("id, amount_kobo, payment_status, user_id")
+    .select(`
+      id, amount_kobo, payment_status, user_id,
+      customer_name, pickup_time,
+      vendors ( phone ),
+      order_items ( item_name, item_price, quantity )
+    `)
     .eq("paystack_reference", reference)
     .single();
 
@@ -80,6 +86,19 @@ export async function POST(req: NextRequest) {
         points,
       });
     }
+  }
+
+  // Notify vendor via WhatsApp (fire-and-forget)
+  const vendor = Array.isArray(order.vendors) ? order.vendors[0] : order.vendors;
+  if (vendor?.phone) {
+    sendWhatsAppOrderNotification({
+      vendorPhone: vendor.phone,
+      orderId: order.id,
+      customerName: order.customer_name ?? "Customer",
+      items: order.order_items ?? [],
+      totalKobo: paidAmountKobo,
+      pickupTime: order.pickup_time ?? null,
+    }).catch((err) => console.error("WhatsApp notification failed:", err));
   }
 
   console.log(`Order ${order.id} confirmed. Amount: ${paidAmountKobo} kobo`);
