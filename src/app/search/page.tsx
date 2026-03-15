@@ -1,13 +1,10 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { SearchBar } from "@/components/marketplace/search-bar";
-import { formatNGN, koboToNaira } from "@/lib/utils/currency";
-import { Store } from "lucide-react";
+import { SearchResultCard } from "@/components/search/search-result-card";
 
 interface PageProps {
   searchParams: Promise<{ q?: string }>;
@@ -45,44 +42,9 @@ async function SearchResults({ q }: { q: string }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {filtered.map((item) => {
-        const vendor = item.vendor as { id: string; name: string; slug: string; logo_url: string | null };
+        const vendor = item.vendor as { id: string; name: string; slug: string };
         return (
-          <Link
-            key={item.id}
-            href={`/vendors/${vendor.slug}`}
-            className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md"
-          >
-            <div className="relative h-44 w-full bg-gray-100">
-              {item.image_url ? (
-                <Image
-                  src={item.image_url}
-                  alt={item.name}
-                  fill
-                  className="object-cover transition group-hover:scale-105"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-gray-300">
-                  <Store className="h-10 w-10" />
-                </div>
-              )}
-            </div>
-            <div className="flex flex-1 flex-col p-4">
-              <p className="font-semibold text-gray-900 line-clamp-1">{item.name}</p>
-              {item.description && (
-                <p className="mt-1 text-sm text-gray-500 line-clamp-2">{item.description}</p>
-              )}
-              <div className="mt-auto flex items-center justify-between pt-3">
-                <span className="text-sm font-bold text-brand-600">
-                  {formatNGN(koboToNaira(item.price))}
-                </span>
-                <span className="flex items-center gap-1 text-xs text-gray-400">
-                  <Store className="h-3 w-3" />
-                  {vendor.name}
-                </span>
-              </div>
-            </div>
-          </Link>
+          <SearchResultCard key={item.id} item={item} vendor={vendor} />
         );
       })}
     </div>
