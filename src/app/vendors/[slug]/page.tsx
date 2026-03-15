@@ -10,6 +10,7 @@ import { StorefrontProducts } from "@/components/vendor/storefront-products";
 import { MapPin, Clock, Star, Package, Store, Share2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { FollowButton } from "@/components/vendor/follow-button";
 import type { Vendor, Product, ProductCategory } from "@/types/database.types";
 
 export const revalidate = 60;
@@ -157,7 +158,7 @@ export default async function VendorStorefront({ params }: PageProps) {
         {/* Vendor Identity */}
         <div className="bg-white border-b border-gray-100 shadow-sm">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-10 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-4 pb-5">
               {/* Logo */}
               <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border-4 border-white bg-white shadow-lg">
                 {vendor.logo_url ? (
@@ -181,12 +182,7 @@ export default async function VendorStorefront({ params }: PageProps) {
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Link
-                    href="#"
-                    className="rounded-full border border-brand-500 px-4 py-1.5 text-sm font-medium text-brand-600 hover:bg-brand-50 transition-colors"
-                  >
-                    Follow
-                  </Link>
+                  <FollowButton slug={vendor.slug} />
                   <button
                     type="button"
                     className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
