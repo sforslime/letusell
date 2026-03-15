@@ -43,7 +43,7 @@ export function SearchBar({ className, placeholder = "Search vendors or dishes..
         value={value}
         onChange={(e) => handleSearch(e.target.value)}
         placeholder={placeholder}
-        className="h-12 w-full rounded-2xl border border-gray-200 bg-white pl-10 pr-10 text-sm shadow-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/20"
+        className="h-12 w-full rounded-2xl border border-gray-200 bg-white pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/20"
       />
       {value && (
         <button
