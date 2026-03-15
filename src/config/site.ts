@@ -1,3 +1,11 @@
+if (
+  typeof window === "undefined" &&
+  process.env.NODE_ENV === "production" &&
+  !process.env.NEXT_PUBLIC_UNIVERSITY_ID
+) {
+  throw new Error("NEXT_PUBLIC_UNIVERSITY_ID is required but not set.");
+}
+
 export const siteConfig = {
   name: "LetuSell",
   description: "Order food from your favourite campus vendors.",

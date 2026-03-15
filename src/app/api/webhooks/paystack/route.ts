@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyPaystackSignature } from "@/lib/paystack/verify";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { sendWhatsAppOrderNotification } from "@/lib/whatsapp/client";
+import { sendOrderConfirmationEmail } from "@/lib/email/resend";
 
 export async function POST(req: NextRequest) {
   const signature = req.headers.get("x-paystack-signature") ?? "";
@@ -42,8 +43,8 @@ export async function POST(req: NextRequest) {
     .from("orders")
     .select(`
       id, amount_kobo, payment_status, user_id,
-      customer_name, pickup_time,
-      vendors ( phone ),
+      customer_name, customer_email, pickup_time,
+      vendors ( name, phone ),
       order_items ( item_name, item_price, quantity )
     `)
     .eq("paystack_reference", reference)
@@ -88,8 +89,22 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Notify vendor via WhatsApp (fire-and-forget)
   const vendor = Array.isArray(order.vendors) ? order.vendors[0] : order.vendors;
+
+  // Send customer confirmation email (fire-and-forget)
+  if (order.customer_email) {
+    sendOrderConfirmationEmail({
+      to: order.customer_email,
+      customerName: order.customer_name ?? "Customer",
+      orderId: order.id,
+      vendorName: vendor?.name ?? "the vendor",
+      items: order.order_items ?? [],
+      totalKobo: paidAmountKobo,
+      pickupTime: order.pickup_time ?? null,
+    }).catch((err) => console.error("Order confirmation email failed:", err));
+  }
+
+  // Notify vendor via WhatsApp (fire-and-forget)
   if (vendor?.phone) {
     sendWhatsAppOrderNotification({
       vendorPhone: vendor.phone,
@@ -101,6 +116,5 @@ export async function POST(req: NextRequest) {
     }).catch((err) => console.error("WhatsApp notification failed:", err));
   }
 
-  console.log(`Order ${order.id} pending vendor acceptance. Amount: ${paidAmountKobo} kobo`);
   return NextResponse.json({ received: true });
 }

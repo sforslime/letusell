@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     // Validate vendor exists and is approved
     const { data: vendor } = await admin
       .from("vendors")
-      .select("id, name, is_approved, is_active, university_id, avg_prep_time")
+      .select("id, name, is_approved, is_active, university_id, avg_prep_time, min_order")
       .eq("id", vendorId)
       .single();
 
@@ -51,21 +51,36 @@ export async function POST(req: NextRequest) {
     // Build item map for fast lookup
     const itemMap = new Map(menuItems.map((mi) => [mi.id, mi]));
 
-    // Calculate total using server-side prices
+    // Calculate total using server-side prices (trust client modifier adjustments for MVP)
     let totalNaira = 0;
     const orderItemsPayload = cart.map((cartItem) => {
       const mi = itemMap.get(cartItem.menuItemId)!;
-      totalNaira += mi.price * cartItem.quantity;
+      const modifierTotal = (cartItem.selectedModifiers ?? []).reduce(
+        (s, m) => s + m.priceAdjustment,
+        0
+      );
+      totalNaira += (mi.price + modifierTotal) * cartItem.quantity;
       return {
         menu_item_id: mi.id,
         item_name: mi.name,
         item_price: mi.price,
         quantity: cartItem.quantity,
         notes: cartItem.notes ?? null,
+        modifiers: cartItem.selectedModifiers?.length
+          ? cartItem.selectedModifiers
+          : [],
       };
     });
 
     const amountKobo = nairaToKobo(totalNaira);
+
+    // Enforce minimum order
+    if (vendor.min_order && totalNaira < Number(vendor.min_order)) {
+      return NextResponse.json(
+        { error: `Minimum order is ₦${Number(vendor.min_order).toLocaleString()}` },
+        { status: 422 }
+      );
+    }
 
     // Determine user_id if authenticated
     const authHeader = req.headers.get("authorization");

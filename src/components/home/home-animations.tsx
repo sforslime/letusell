@@ -28,7 +28,7 @@ export function HomeAnimations() {
         ease: "sine.inOut",
       });
       gsap.to(".hero-circle-2", {
-        y: 14,
+        y: 140,
         duration: 5,
         repeat: -1,
         yoyo: true,
@@ -36,7 +36,7 @@ export function HomeAnimations() {
         delay: 0.8,
       });
       gsap.to(".hero-circle-3", {
-        y: -10,
+        y: -150,
         duration: 3.5,
         repeat: -1,
         yoyo: true,

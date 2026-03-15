@@ -13,6 +13,7 @@ import { PaystackButton } from "@/components/checkout/paystack-button";
 import { CartSummary } from "@/components/cart/cart-summary";
 import { CartItemRow } from "@/components/cart/cart-item-row";
 import { Button } from "@/components/ui/button";
+import { PickupTimeSelector } from "@/components/checkout/pickup-time-selector";
 import { formatNGN } from "@/lib/utils/currency";
 import { koboToNaira } from "@/lib/utils/currency";
 import type { CheckoutFormValues } from "@/lib/validations/checkout.schema";
@@ -25,6 +26,7 @@ export default function CheckoutPage() {
   const [initData, setInitData] = useState<CheckoutInitializeResponse | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [customerEmail, setCustomerEmail] = useState<string>("");
+  const [pickupTime, setPickupTime] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -72,6 +74,7 @@ export default function CheckoutPage() {
             phone: values.phone || undefined,
           },
           vendorId,
+          pickupTime: pickupTime || undefined,
           notes: values.notes || undefined,
         }),
       });
@@ -154,6 +157,16 @@ export default function CheckoutPage() {
                   onSubmit={handleFormSubmit}
                   isSubmitting={isInitializing}
                 >
+                  {vendorSlug && (
+                    <div>
+                      <p className="mb-2 text-sm font-semibold text-gray-900">Pickup time</p>
+                      <PickupTimeSelector
+                        vendorSlug={vendorSlug}
+                        value={pickupTime}
+                        onChange={setPickupTime}
+                      />
+                    </div>
+                  )}
                   {error && (
                     <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">
                       {error}

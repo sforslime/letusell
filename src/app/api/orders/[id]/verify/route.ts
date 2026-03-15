@@ -49,10 +49,10 @@ export async function POST(
     return NextResponse.json({ status: "failed" });
   }
 
-  // Confirm the order
+  // Mark as pending — vendor must accept, matching the webhook flow
   await admin
     .from("orders")
-    .update({ payment_status: "paid", status: "confirmed" })
+    .update({ payment_status: "paid", status: "pending" })
     .eq("id", order.id);
 
   // Award loyalty points
