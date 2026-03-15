@@ -29,7 +29,10 @@ export function PayoutSettingsForm({ vendorId }: PayoutSettingsFormProps) {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    fetch("/api/vendor/banks").then((r) => r.json()).then((d) => setBanks(d.banks ?? []));
+    fetch("/api/vendor/banks").then((r) => r.json()).then((d) => {
+      const seen = new Set<string>();
+      setBanks((d.banks ?? []).filter((b: Bank) => seen.has(b.code) ? false : seen.add(b.code)));
+    });
     fetchPayout();
   }, []);
 
