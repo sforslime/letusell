@@ -10,11 +10,14 @@ import { formatNGN } from "@/lib/utils/currency";
 import { koboToNaira } from "@/lib/utils/currency";
 import { formatPickupTime } from "@/lib/utils/date";
 import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
+import { useOrderSound } from "@/hooks/use-order-sound";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import type { Order, OrderStatus } from "@/types/database.types";
 
 const STATUS_FLOW: Record<string, OrderStatus | null> = {
+  pending: "confirmed",
   confirmed: "preparing",
   preparing: "ready",
   ready: "completed",
@@ -22,6 +25,7 @@ const STATUS_FLOW: Record<string, OrderStatus | null> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
+  pending: "Accept Order",
   confirmed: "Start Preparing",
   preparing: "Mark Ready",
   ready: "Mark Completed",
@@ -34,7 +38,16 @@ const COLUMN_CONFIG: {
   badgeBg: string;
   badgeText: string;
   readonly?: boolean;
+  showReject?: boolean;
 }[] = [
+  {
+    label: "Pending",
+    statuses: ["pending"],
+    dot: "bg-orange-400",
+    badgeBg: "bg-orange-50",
+    badgeText: "text-orange-700",
+    showReject: true,
+  },
   {
     label: "Confirmed",
     statuses: ["confirmed"],
@@ -72,6 +85,16 @@ export default function VendorOrdersPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [completedToday, setCompletedToday] = useState<Order[]>([]);
   const { orders, loading } = useRealtimeOrders(vendorId);
+  const { playSound } = useOrderSound();
+
+  // Track previous order count to detect new inserts
+  const prevOrderCount = useState(orders.length)[0];
+
+  useEffect(() => {
+    if (orders.length > prevOrderCount) {
+      playSound();
+    }
+  }, [orders.length]);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }: { data: { user: User | null } }) => {
@@ -85,53 +108,44 @@ export default function VendorOrdersPage() {
     });
   }, []);
 
-  // Fetch completed orders for today separately (realtime hook excludes them)
   useEffect(() => {
     if (!vendorId) return;
+    fetchCompletedToday();
+  }, [vendorId]);
+
+  async function fetchCompletedToday() {
+    if (!vendorId) return;
     const today = new Date().toISOString().slice(0, 10);
-    supabase
+    const { data } = await supabase
       .from("orders")
       .select("*")
       .eq("vendor_id", vendorId)
       .eq("status", "completed")
       .gte("created_at", `${today}T00:00:00`)
       .lte("created_at", `${today}T23:59:59`)
-      .order("created_at", { ascending: false })
-      .then(({ data }: { data: Order[] | null }) => {
-        setCompletedToday(data ?? []);
-      });
-  }, [vendorId]);
-
-  // Keep completedToday in sync when an order transitions to completed
-  useEffect(() => {
-    // orders from realtime hook does not include completed; listen for status changes
-    // handled via completedToday state above; re-fetch when orders change
-    // (simple approach: orders array changes trigger re-check)
-  }, [orders]);
+      .order("created_at", { ascending: false });
+    setCompletedToday((data as Order[]) ?? []);
+  }
 
   async function updateStatus(orderId: string, currentStatus: string) {
     const next = STATUS_FLOW[currentStatus];
     if (!next) return;
     setUpdating(orderId);
     await supabase.from("orders").update({ status: next }).eq("id", orderId);
-    // If transitioning to completed, fetch completed list again
-    if (next === "completed" && vendorId) {
-      const today = new Date().toISOString().slice(0, 10);
-      const { data } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("vendor_id", vendorId)
-        .eq("status", "completed")
-        .gte("created_at", `${today}T00:00:00`)
-        .lte("created_at", `${today}T23:59:59`)
-        .order("created_at", { ascending: false });
-      setCompletedToday((data as Order[]) ?? []);
+    if (next === "completed") {
+      await fetchCompletedToday();
     }
     setUpdating(null);
   }
 
+  async function rejectOrder(orderId: string) {
+    setUpdating(orderId);
+    await supabase.from("orders").update({ status: "cancelled" }).eq("id", orderId);
+    setUpdating(null);
+  }
+
   const allActive = orders.filter((o) =>
-    ["confirmed", "preparing", "ready"].includes(o.status)
+    ["pending", "confirmed", "preparing", "ready"].includes(o.status)
   );
 
   const getColumnOrders = (col: (typeof COLUMN_CONFIG)[number]) => {
@@ -148,18 +162,27 @@ export default function VendorOrdersPage() {
             <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
             <p className="mt-1 text-sm text-gray-500">Live updates via Supabase Realtime</p>
           </div>
-          {!loading && (
-            <div className="rounded-xl bg-white border border-gray-100 px-4 py-2 shadow-sm">
-              <span className="text-sm text-gray-500">Active orders: </span>
-              <span className="text-sm font-bold text-gray-900">{allActive.length}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {!loading && (
+              <div className="rounded-xl bg-white border border-gray-100 px-4 py-2 shadow-sm">
+                <span className="text-sm text-gray-500">Active: </span>
+                <span className="text-sm font-bold text-gray-900">{allActive.length}</span>
+              </div>
+            )}
+            {vendorId && (
+              <NotificationBell
+                vendorId={vendorId}
+                onAccept={() => {}}
+                onReject={() => {}}
+              />
+            )}
+          </div>
         </div>
 
         {loading ? (
           <div className="mt-10 flex justify-center"><Spinner /></div>
         ) : (
-          <div className="mt-6 grid gap-5 sm:grid-cols-4">
+          <div className="mt-6 grid gap-5" style={{ gridTemplateColumns: `repeat(${COLUMN_CONFIG.length}, minmax(200px, 1fr))` }}>
             {COLUMN_CONFIG.map((col) => {
               const columnOrders = getColumnOrders(col);
               return (
@@ -204,14 +227,35 @@ export default function VendorOrdersPage() {
                           <p className="mt-1 text-xs italic text-gray-400">{order.notes}</p>
                         )}
                         {!col.readonly && STATUS_LABELS[order.status] && (
-                          <Button
-                            className="mt-3 w-full"
-                            size="sm"
-                            loading={updating === order.id}
-                            onClick={() => updateStatus(order.id, order.status)}
+                          <div className="mt-3 flex flex-col gap-2">
+                            <Button
+                              className="w-full"
+                              size="sm"
+                              loading={updating === order.id}
+                              onClick={() => updateStatus(order.id, order.status)}
+                            >
+                              {STATUS_LABELS[order.status]}
+                            </Button>
+                            {col.showReject && (
+                              <button
+                                onClick={() => rejectOrder(order.id)}
+                                disabled={updating === order.id}
+                                className="w-full rounded-xl border border-red-200 bg-red-50 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
+                              >
+                                Reject
+                              </button>
+                            )}
+                          </div>
+                        )}
+                        {col.readonly && (
+                          <a
+                            href={`/orders/${order.id}/receipt`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 block w-full rounded-xl border border-gray-200 py-1.5 text-center text-xs font-medium text-gray-500 hover:bg-gray-50"
                           >
-                            {STATUS_LABELS[order.status]}
-                          </Button>
+                            Print receipt
+                          </a>
                         )}
                       </div>
                     ))}

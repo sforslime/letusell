@@ -81,10 +81,13 @@ export const useCartStore = create<CartStore>()(
       },
 
       getTotal() {
-        return get().items.reduce(
-          (sum, item) => sum + item.price * item.quantity,
-          0
-        );
+        return get().items.reduce((sum, item) => {
+          const modifierTotal = (item.selectedModifiers ?? []).reduce(
+            (s, m) => s + m.priceAdjustment,
+            0
+          );
+          return sum + (item.price + modifierTotal) * item.quantity;
+        }, 0);
       },
 
       getItemCount() {

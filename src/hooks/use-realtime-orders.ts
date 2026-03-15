@@ -13,13 +13,12 @@ export function useRealtimeOrders(vendorId: string | null) {
   useEffect(() => {
     if (!vendorId) return;
 
-    // Initial fetch
+    // Initial fetch — includes pending, confirmed, preparing, ready
     supabase
       .from("orders")
       .select("*")
       .eq("vendor_id", vendorId)
-      .neq("status", "completed")
-      .neq("status", "cancelled")
+      .not("status", "in", '("completed","cancelled","awaiting_payment")')
       .order("created_at", { ascending: false })
       .then(({ data }: { data: Order[] | null }) => {
         setOrders(data ?? []);

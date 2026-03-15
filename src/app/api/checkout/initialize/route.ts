@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     // Validate vendor exists and is approved
     const { data: vendor } = await admin
       .from("vendors")
-      .select("id, is_approved, is_active, university_id, avg_prep_time")
+      .select("id, name, is_approved, is_active, university_id, avg_prep_time")
       .eq("id", vendorId)
       .single();
 
@@ -115,14 +115,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Failed to save order items" }, { status: 500 });
     }
 
+    // Check for vendor subaccount (split payment)
+    const { data: payoutInfo } = await admin
+      .from("vendor_payout_info")
+      .select("paystack_subaccount_code, percentage_charge")
+      .eq("vendor_id", vendorId)
+      .maybeSingle();
+
     // Initialize Paystack transaction
     // No callback_url — we use inline popup with JS callback, not redirect flow
-    const txn = await initializeTransaction({
+    const txnParams: Parameters<typeof initializeTransaction>[0] = {
       email: customer.email,
       amount: amountKobo,
       reference: order.id,
       metadata: { order_id: order.id, customer_name: customer.name },
-    });
+    };
+
+    if (payoutInfo?.paystack_subaccount_code) {
+      txnParams.subaccount = payoutInfo.paystack_subaccount_code;
+      txnParams.bearer = "account";
+      if (payoutInfo.percentage_charge) {
+        txnParams.transaction_charge = Math.round(amountKobo * (payoutInfo.percentage_charge / 100));
+      }
+    }
+
+    const txn = await initializeTransaction(txnParams);
 
     // Store Paystack tokens on order
     await admin

@@ -1,4 +1,11 @@
-import type { MenuItem, Vendor } from "./database.types";
+import type { Vendor } from "./database.types";
+
+export interface SelectedCartModifier {
+  groupId: string;
+  optionId: string;
+  name: string;
+  priceAdjustment: number;
+}
 
 export interface CartItem {
   menuItemId: string;
@@ -7,6 +14,7 @@ export interface CartItem {
   quantity: number;
   imageUrl: string | null;
   notes?: string;
+  selectedModifiers?: SelectedCartModifier[];
 }
 
 export interface CartState {

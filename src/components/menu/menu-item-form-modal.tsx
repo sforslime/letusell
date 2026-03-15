@@ -10,6 +10,7 @@ import { menuItemSchema, type MenuItemFormValues } from "@/lib/validations/menu-
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { ModifierGroupsEditor } from "@/components/menu/modifier-groups-editor";
 import type { MenuItem, MenuItemCategory } from "@/types/database.types";
 
 interface MenuItemFormModalProps {
@@ -248,6 +249,14 @@ export function MenuItemFormModal({
               {item ? "Save changes" : "Add item"}
             </Button>
           </form>
+
+          {/* Modifiers — only shown for existing items (need ID) */}
+          {item && (
+            <div className="mt-4 border-t border-gray-100 pt-4">
+              <p className="mb-3 text-sm font-semibold text-gray-700">Modifiers</p>
+              <ModifierGroupsEditor menuItemId={item.id} />
+            </div>
+          )}
 
           {/* Delete */}
           {item && onDeleted && (

@@ -24,6 +24,8 @@ export default function VendorMenuPage() {
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<MenuItem | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }: { data: { user: User | null } }) => {
@@ -83,12 +85,50 @@ export default function VendorMenuPage() {
 
   function handleDeleted(id: string) {
     setItems((prev) => prev.filter((i) => i.id !== id));
+    setSelected((prev) => { const next = new Set(prev); next.delete(id); return next; });
     setFormOpen(false);
     setEditing(null);
   }
 
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selected.size === items.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(items.map((i) => i.id)));
+    }
+  }
+
+  async function bulkUpdate(is_available: boolean) {
+    if (selected.size === 0) return;
+    setBulkLoading(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    const ids = Array.from(selected);
+    await fetch("/api/vendor/menu-items/bulk", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({ ids, is_available }),
+    });
+    setItems((prev) =>
+      prev.map((i) => (selected.has(i.id) ? { ...i, is_available } : i))
+    );
+    setSelected(new Set());
+    setBulkLoading(false);
+  }
+
   const available = items.filter((i) => i.is_available).length;
   const unavailable = items.length - available;
+  const allSelected = items.length > 0 && selected.size === items.length;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -120,6 +160,35 @@ export default function VendorMenuPage() {
           </Button>
         </div>
 
+        {/* Bulk action toolbar */}
+        {selected.size > 0 && (
+          <div className="mb-4 flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+            <span className="text-sm text-gray-600">{selected.size} selected</span>
+            <Button
+              size="sm"
+              loading={bulkLoading}
+              onClick={() => bulkUpdate(true)}
+              className="bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 shadow-none"
+            >
+              Enable selected
+            </Button>
+            <Button
+              size="sm"
+              loading={bulkLoading}
+              onClick={() => bulkUpdate(false)}
+              className="bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200 shadow-none"
+            >
+              Disable selected
+            </Button>
+            <button
+              onClick={() => setSelected(new Set())}
+              className="ml-auto text-sm text-gray-400 hover:text-gray-600"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex justify-center py-20"><Spinner /></div>
         ) : items.length === 0 ? (
@@ -138,6 +207,14 @@ export default function VendorMenuPage() {
             <table className="w-full text-sm">
               <thead className="border-b border-gray-100">
                 <tr className="text-left text-xs uppercase tracking-wide text-gray-400">
+                  <th className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={allSelected}
+                      onChange={toggleSelectAll}
+                      className="rounded"
+                    />
+                  </th>
                   <th className="px-5 py-3">Item</th>
                   <th className="px-5 py-3">Price</th>
                   <th className="hidden px-5 py-3 sm:table-cell">Category</th>
@@ -149,7 +226,15 @@ export default function VendorMenuPage() {
                 {items.map((item) => {
                   const cat = categories.find((c) => c.id === item.category_id);
                   return (
-                    <tr key={item.id} className="hover:bg-gray-50/50">
+                    <tr key={item.id} className={`hover:bg-gray-50/50 ${selected.has(item.id) ? "bg-brand-50/30" : ""}`}>
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(item.id)}
+                          onChange={() => toggleSelect(item.id)}
+                          className="rounded"
+                        />
+                      </td>
                       {/* Name + image */}
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">

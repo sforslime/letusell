@@ -71,10 +71,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   }
 
-  // Confirm the order
+  // Mark as pending — vendor must explicitly accept/reject
   await admin
     .from("orders")
-    .update({ payment_status: "paid", status: "confirmed" })
+    .update({ payment_status: "paid", status: "pending" })
     .eq("id", order.id);
 
   // Award loyalty points (100 kobo = 1 naira = 1 point per ₦100 spent)
@@ -101,6 +101,6 @@ export async function POST(req: NextRequest) {
     }).catch((err) => console.error("WhatsApp notification failed:", err));
   }
 
-  console.log(`Order ${order.id} confirmed. Amount: ${paidAmountKobo} kobo`);
+  console.log(`Order ${order.id} pending vendor acceptance. Amount: ${paidAmountKobo} kobo`);
   return NextResponse.json({ received: true });
 }

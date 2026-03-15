@@ -4,6 +4,7 @@ export type UserRole = "admin" | "vendor" | "user";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 export type OrderStatus =
   | "awaiting_payment"
+  | "pending"
   | "confirmed"
   | "preparing"
   | "ready"
@@ -116,7 +117,66 @@ export interface OrderItem {
   quantity: number;
   subtotal: number;
   notes: string | null;
+  modifiers: SelectedModifier[] | null;
   created_at: string;
+}
+
+export interface SelectedModifier {
+  groupId: string;
+  optionId: string;
+  name: string;
+  priceAdjustment: number;
+}
+
+export interface ModifierGroup {
+  id: string;
+  menu_item_id: string;
+  name: string;
+  is_required: boolean;
+  min_selections: number;
+  max_selections: number;
+  sort_order: number;
+  modifier_options?: ModifierOption[];
+}
+
+export interface ModifierOption {
+  id: string;
+  group_id: string;
+  name: string;
+  price_adjustment: number;
+  is_default: boolean;
+  is_available: boolean;
+  sort_order: number;
+}
+
+export interface VendorHours {
+  id: string;
+  vendor_id: string;
+  day_of_week: number;
+  opens_at: string | null;
+  closes_at: string | null;
+  is_closed: boolean;
+}
+
+export interface VendorSpecialClosure {
+  id: string;
+  vendor_id: string;
+  closure_date: string;
+  reason: string | null;
+}
+
+export interface VendorPayoutInfo {
+  id: string;
+  vendor_id: string;
+  bank_code: string | null;
+  account_number: string | null;
+  account_name: string | null;
+  paystack_subaccount_code: string | null;
+  paystack_subaccount_id: string | null;
+  settlement_bank: string | null;
+  percentage_charge: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Review {

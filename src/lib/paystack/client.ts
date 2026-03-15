@@ -32,6 +32,9 @@ export interface PaystackInitParams {
   reference: string;
   callback_url?: string;
   metadata?: Record<string, unknown>;
+  subaccount?: string;
+  bearer?: "account" | "subaccount";
+  transaction_charge?: number; // platform fee in kobo
 }
 
 export async function initializeTransaction(

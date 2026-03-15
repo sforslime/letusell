@@ -3,6 +3,7 @@ import type { OrderStatus } from "@/types/database.types";
 
 const statusMap: Record<OrderStatus, { label: string; variant: "default" | "success" | "warning" | "destructive" | "outline" }> = {
   awaiting_payment: { label: "Awaiting Payment", variant: "warning" },
+  pending: { label: "Pending", variant: "warning" },
   confirmed: { label: "Confirmed", variant: "default" },
   preparing: { label: "Preparing", variant: "default" },
   ready: { label: "Ready for Pickup", variant: "success" },
