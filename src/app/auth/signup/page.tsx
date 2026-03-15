@@ -8,7 +8,7 @@ import { SignupForm } from "@/components/auth/signup-form";
 
 export const metadata: Metadata = {
   title: "Create account",
-  description: "Create a free LetuSell account to order food and earn loyalty points.",
+  description: "Create a free LetuSell account to shop from campus vendors and earn loyalty points.",
 };
 
 export default function SignupPage() {
@@ -21,9 +21,9 @@ export default function SignupPage() {
           </div>
         </Link>
         <div>
-          <p className="text-4xl font-bold leading-tight">Join campus food ordering today.</p>
+          <p className="text-4xl font-bold leading-tight">Shop from every campus brand in one place.</p>
           <ul className="mt-6 space-y-3 text-white/80">
-            <li className="flex items-center gap-2"><span className="text-orange-300">✓</span> Order from any campus vendor</li>
+            <li className="flex items-center gap-2"><span className="text-orange-300">✓</span> Shop fashion, food, beauty & more</li>
             <li className="flex items-center gap-2"><span className="text-orange-300">✓</span> Track your orders in real-time</li>
             <li className="flex items-center gap-2"><span className="text-orange-300">✓</span> Earn loyalty points on every order</li>
           </ul>

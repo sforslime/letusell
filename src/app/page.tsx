@@ -62,7 +62,7 @@ export default function HomePage() {
               <span className="text-brand-200">ordered your way</span>
             </h1>
             <p className="hero-sub mx-auto mt-5 max-w-lg text-lg leading-relaxed text-white/75">
-              Browse campus vendors, order online, and pick up when it&apos;s ready. Fast, easy, cashless.
+              Discover campus brands — fashion, food, beauty, and more. Order online, pick up on campus.
             </p>
 
             {/* Search bar */}
@@ -70,7 +70,7 @@ export default function HomePage() {
               <Suspense>
                 <SearchBar
                   className="shadow-2xl"
-                  placeholder="Search for jollof rice, burgers, drinks..."
+                  placeholder="Search for fashion, food, beauty..."
                 />
               </Suspense>
             </div>
@@ -126,11 +126,11 @@ export default function HomePage() {
           <div className="mx-auto max-w-4xl">
             <div className="how-heading mb-12 text-center">
               <h2 className="text-3xl font-bold text-gray-900">How it works</h2>
-              <p className="mt-2 text-gray-500">Order campus food in three simple steps</p>
+              <p className="mt-2 text-gray-500">Shop from campus brands in three simple steps</p>
             </div>
             <div className="grid gap-6 sm:grid-cols-3">
               {[
-                { icon: <Search className="h-6 w-6" />, step: "1", title: "Browse vendors", desc: "Explore all food vendors on campus and browse their full menus." },
+                { icon: <Search className="h-6 w-6" />, step: "1", title: "Browse vendors", desc: "Explore all campus brands — from fashion and food to beauty and electronics." },
                 { icon: <ShoppingBag className="h-6 w-6" />, step: "2", title: "Place your order", desc: "Add items to cart, choose your pickup time, and pay securely online." },
                 { icon: <Clock className="h-6 w-6" />, step: "3", title: "Pick it up", desc: "Get notified the moment your order is ready. Walk in and grab it!" },
               ].map((item, i) => (
@@ -152,8 +152,8 @@ export default function HomePage() {
           <div className="cta-banner rounded-3xl bg-gradient-to-r from-brand-500 to-brand-700 p-8 text-white sm:p-12">
             <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:justify-between sm:text-left">
               <div>
-                <h3 className="text-2xl font-bold">Ready to order?</h3>
-                <p className="mt-1 text-white/75">Explore all vendors and find your next meal on campus.</p>
+                <h3 className="text-2xl font-bold">Ready to shop?</h3>
+                <p className="mt-1 text-white/75">Explore all campus vendors and find something great today.</p>
               </div>
               <Link
                 href="/vendors"

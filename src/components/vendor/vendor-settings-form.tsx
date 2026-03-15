@@ -226,7 +226,7 @@ export function VendorSettingsForm({ vendor: initialVendor }: VendorSettingsForm
             label="Description"
             name="description"
             defaultValue={vendor.description ?? ""}
-            placeholder="Tell customers about your food..."
+            placeholder="Tell customers about your brand..."
           />
 
           <Input

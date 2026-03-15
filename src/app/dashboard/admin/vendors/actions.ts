@@ -12,7 +12,7 @@ export interface CreateVendorState {
 const createVendorSchema = z.object({
   name: z.string().min(1, "Vendor name is required.").max(100),
   slug: z.string().max(100).optional(),
-  category: z.enum(["local_food", "fast_food", "snacks", "drinks", "pastries", "other"]).default("other"),
+  category: z.enum(["food_drinks", "fashion", "beauty", "accessories", "stationery", "electronics", "services", "other"]).default("other"),
   description: z.string().max(500).optional(),
   location_text: z.string().max(200).optional(),
   phone: z.string().regex(/^\+?[\d\s()-]{7,20}$/, "Invalid phone number.").optional().or(z.literal("")),

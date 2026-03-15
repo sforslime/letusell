@@ -78,11 +78,11 @@ export default async function VendorsPage({ searchParams }: PageProps) {
       <section className="border-b border-gray-100 bg-gradient-to-b from-gray-50 to-white px-4 py-8 sm:px-6">
         <div className="mx-auto max-w-7xl">
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Campus vendors</h1>
-          <p className="mt-1 text-gray-500">Browse and order from food vendors across campus</p>
+          <p className="mt-1 text-gray-500">Browse and order from vendors across campus</p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex-1 max-w-lg">
               <Suspense>
-                <SearchBar placeholder="Search vendors or dishes..." />
+                <SearchBar placeholder="Search vendors or products..." />
               </Suspense>
             </div>
           </div>

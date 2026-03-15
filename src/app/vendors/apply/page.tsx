@@ -5,7 +5,7 @@ import { VendorApplyForm } from "@/components/vendors/vendor-apply-form";
 
 export const metadata: Metadata = {
   title: "Sell on LetuSell",
-  description: "Apply to become a vendor and reach hundreds of students on campus.",
+  description: "Apply to sell on LetuSell and reach hundreds of students on campus.",
 };
 
 export default function VendorApplyPage() {
@@ -25,7 +25,7 @@ export default function VendorApplyPage() {
         </Link>
         <div>
           <p className="text-4xl font-bold leading-tight">
-            Sell food to hundreds of students on campus.
+            Sell to hundreds of students on campus.
           </p>
           <ul className="mt-6 space-y-3 text-white/80">
             <li className="flex items-center gap-2">
@@ -35,7 +35,7 @@ export default function VendorApplyPage() {
               <span className="text-orange-300">✓</span> Receive orders and payments automatically
             </li>
             <li className="flex items-center gap-2">
-              <span className="text-orange-300">✓</span> Manage your menu and hours from a dashboard
+              <span className="text-orange-300">✓</span> Manage your catalogue and hours from a dashboard
             </li>
             <li className="flex items-center gap-2">
               <span className="text-orange-300">✓</span> Get paid via Paystack — fast and reliable

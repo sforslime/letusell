@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const WORDS = ["food", "jerseys", "bags", "accessories", "snacks", "merch", "stationery", "drinks"];
+const WORDS = ["fashion", "food", "beauty", "gadgets", "accessories", "merch", "stationery", "services"];
 const TYPE_SPEED = 90;   // ms per character typed
 const DELETE_SPEED = 50; // ms per character deleted
 const PAUSE_AFTER_TYPE = 1600; // ms to hold before deleting

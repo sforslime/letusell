@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const faqs = [
   {
     q: "How do I place an order?",
-    a: "Browse vendors, add items to your cart, then go to checkout. Enter your contact details, pay securely via Paystack, and your vendor will prepare your food. You'll get a confirmation page with your pickup details.",
+    a: "Browse vendors, add items to your cart, then go to checkout. Enter your contact details, pay securely via Paystack, and your vendor will prepare your order. You'll get a confirmation page with your pickup details.",
   },
   {
     q: "Do I need an account?",
@@ -41,7 +41,7 @@ const faqs = [
   },
   {
     q: "I'm a vendor — how do I get listed?",
-    a: "Contact us using the details below. We'll set up your account, create your menu, and get you approved to start receiving orders.",
+    a: "Apply at letusell.ng/vendors/apply. Fill in your brand details and we'll review your application within 24 hours.",
   },
 ];
 
@@ -54,7 +54,7 @@ export default function HelpPage() {
         {/* Hero */}
         <div className="mb-10 text-center">
           <h1 className="text-3xl font-extrabold text-gray-900">Help & Contact</h1>
-          <p className="mt-2 text-gray-500">Everything you need to know about ordering food on campus.</p>
+          <p className="mt-2 text-gray-500">Everything you need to know about shopping on campus.</p>
         </div>
 
         {/* How it works */}
@@ -62,10 +62,10 @@ export default function HelpPage() {
           <h2 className="mb-5 text-lg font-bold text-gray-900">How it works</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
-              { icon: Store, title: "Browse vendors", body: "Explore all approved food vendors on your campus, see their menus, prices, and opening hours." },
+              { icon: Store, title: "Browse vendors", body: "Explore all approved campus brands — fashion, food, beauty, electronics, and more." },
               { icon: ShoppingBag, title: "Add to cart", body: "Pick your items from a single vendor. Your cart is saved automatically so you can browse freely." },
               { icon: CreditCard, title: "Pay securely", body: "Checkout with your name and email. Pay via card or bank transfer using Paystack's secure checkout." },
-              { icon: Clock, title: "Pick up your food", body: "Head to the vendor's stall at your estimated pickup time. Show your order confirmation if needed." },
+              { icon: Clock, title: "Pick up your order", body: "Head to the vendor's stall at your estimated pickup time. Show your order confirmation if needed." },
             ].map(({ icon: Icon, title, body }) => (
               <div key={title} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50">

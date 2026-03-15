@@ -8,7 +8,7 @@ import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to your LetuSell account to order food from campus vendors.",
+  description: "Sign in to your LetuSell account to shop from campus vendors.",
 };
 
 export default function LoginPage() {
@@ -22,8 +22,8 @@ export default function LoginPage() {
           </div>
         </Link>
         <div>
-          <p className="text-4xl font-bold leading-tight">&ldquo;Campus food, ordered your way.&rdquo;</p>
-          <p className="mt-4 text-white/70">Order from your favourite vendors on campus and pick up when it&apos;s ready.</p>
+          <p className="text-4xl font-bold leading-tight">&ldquo;Campus shopping, your way.&rdquo;</p>
+          <p className="mt-4 text-white/70">Shop from your favourite campus brands and pick up when it&apos;s ready.</p>
         </div>
         <p className="text-sm text-white/50">© 2026 LetuSell</p>
       </div>

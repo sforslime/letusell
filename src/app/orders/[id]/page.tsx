@@ -119,7 +119,7 @@ export default function OrderConfirmationPage({ params }: PageProps) {
             <>
               <CheckCircle className="mx-auto h-14 w-14 text-green-500" />
               <h1 className="mt-3 text-2xl font-bold text-gray-900">Order confirmed!</h1>
-              <p className="mt-1 text-sm text-gray-500">Your food is being prepared</p>
+              <p className="mt-1 text-sm text-gray-500">Your order is being prepared</p>
             </>
           ) : (
             <>
@@ -193,7 +193,7 @@ export default function OrderConfirmationPage({ params }: PageProps) {
           <Link href="/vendors">
             <Button variant="outline" className="w-full">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Order more food
+              Shop more
             </Button>
           </Link>
         </div>

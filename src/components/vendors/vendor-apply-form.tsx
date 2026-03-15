@@ -18,7 +18,7 @@ const schema = z
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirm_password: z.string(),
     vendor_name: z.string().min(2, "Brand name must be at least 2 characters"),
-    category: z.enum(["local_food", "fast_food", "snacks", "drinks", "pastries", "other"]),
+    category: z.enum(["food_drinks", "fashion", "beauty", "accessories", "stationery", "electronics", "services", "other"]),
     description: z.string().max(1000).optional().or(z.literal("")),
     location_text: z.string().min(2, "Location on campus is required"),
     phone: z

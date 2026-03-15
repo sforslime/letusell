@@ -15,7 +15,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-gray-500">
-              Campus food ordering made simple. Browse, order, and pick up — no cash needed.
+              The campus marketplace. Shop fashion, food, beauty, and more — order online, pick up on campus.
             </p>
           </div>
 

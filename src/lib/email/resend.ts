@@ -47,7 +47,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
       <p><strong>Total: ₦${totalNaira}</strong></p>
       ${pickupLine}
       <p><a href="${orderUrl}">Track your order</a></p>
-      <p style="color:#888;font-size:12px">LetuSell — campus food marketplace</p>
+      <p style="color:#888;font-size:12px">LetuSell — campus marketplace</p>
     `,
   });
 }

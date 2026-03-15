@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Star, Clock } from "lucide-react";
+import { MapPin, Star, Clock, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatNGN } from "@/lib/utils/currency";
 import type { Vendor } from "@/types/database.types";
@@ -19,12 +19,20 @@ function isVendorOpen(vendor: Vendor): boolean {
 }
 
 const categoryLabels: Record<string, string> = {
-  local_food: "Local Dishes",
-  fast_food: "Fast Food",
-  snacks: "Snacks",
-  drinks: "Drinks",
-  pastries: "Pastries",
+  food_drinks: "Food & Drinks",
+  fashion: "Fashion",
+  beauty: "Beauty & Wellness",
+  accessories: "Accessories",
+  stationery: "Books & Stationery",
+  electronics: "Electronics & Tech",
+  services: "Services",
   other: "Other",
+  // legacy values
+  local_food: "Food & Drinks",
+  fast_food: "Food & Drinks",
+  snacks: "Food & Drinks",
+  drinks: "Food & Drinks",
+  pastries: "Food & Drinks",
 };
 
 export function VendorCard({ vendor }: VendorCardProps) {
@@ -45,7 +53,7 @@ export function VendorCard({ vendor }: VendorCardProps) {
             />
           ) : (
             <div className="flex h-full items-center justify-center">
-              <span className="text-6xl opacity-80">🍽️</span>
+              <Store className="h-12 w-12 text-brand-300 opacity-60" />
             </div>
           )}
           {/* Gradient overlay for text readability */}

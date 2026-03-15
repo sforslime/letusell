@@ -25,12 +25,19 @@ const navLinks = adminDashboardLinks.map((link, i) => ({
 }));
 
 const categoryLabels: Record<string, string> = {
-  local_food: "Local Food",
-  fast_food: "Fast Food",
-  snacks: "Snacks",
-  drinks: "Drinks",
-  pastries: "Pastries",
+  food_drinks: "Food & Drinks",
+  fashion: "Fashion",
+  beauty: "Beauty & Wellness",
+  accessories: "Accessories",
+  stationery: "Books & Stationery",
+  electronics: "Electronics & Tech",
+  services: "Services",
   other: "Other",
+  local_food: "Food & Drinks",
+  fast_food: "Food & Drinks",
+  snacks: "Food & Drinks",
+  drinks: "Food & Drinks",
+  pastries: "Food & Drinks",
 };
 
 async function approveVendor(vendorId: string, ownerId: string | null) {
