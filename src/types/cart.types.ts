@@ -8,7 +8,7 @@ export interface SelectedCartModifier {
 }
 
 export interface CartItem {
-  menuItemId: string;
+  productId: string;
   name: string;
   price: number;
   quantity: number;
@@ -26,8 +26,8 @@ export interface CartState {
 
 export interface CartActions {
   addItem: (item: CartItem, vendor: Pick<Vendor, "id" | "name" | "slug">) => void;
-  removeItem: (menuItemId: string) => void;
-  updateQuantity: (menuItemId: string, quantity: number) => void;
+  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   getTotal: () => number;
   getItemCount: () => number;

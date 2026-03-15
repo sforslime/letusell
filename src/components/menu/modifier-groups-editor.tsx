@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import type { ModifierGroup, ModifierOption } from "@/types/database.types";
 
 interface ModifierGroupsEditorProps {
-  menuItemId: string;
+  productId: string;
 }
 
-export function ModifierGroupsEditor({ menuItemId }: ModifierGroupsEditorProps) {
+export function ModifierGroupsEditor({ productId }: ModifierGroupsEditorProps) {
   const supabase = getSupabaseBrowserClient();
   const [groups, setGroups] = useState<(ModifierGroup & { modifier_options: ModifierOption[] })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,13 +20,13 @@ export function ModifierGroupsEditor({ menuItemId }: ModifierGroupsEditorProps) 
 
   useEffect(() => {
     fetchGroups();
-  }, [menuItemId]);
+  }, [productId]);
 
   async function fetchGroups() {
     const { data } = await supabase
       .from("modifier_groups")
       .select("*, modifier_options(*)")
-      .eq("menu_item_id", menuItemId)
+      .eq("product_id", productId)
       .order("sort_order");
     setGroups((data ?? []) as (ModifierGroup & { modifier_options: ModifierOption[] })[]);
     setLoading(false);
@@ -35,7 +35,7 @@ export function ModifierGroupsEditor({ menuItemId }: ModifierGroupsEditorProps) 
   async function addGroup() {
     const { data } = await supabase
       .from("modifier_groups")
-      .insert({ menu_item_id: menuItemId, name: "New group", sort_order: groups.length })
+      .insert({ product_id: productId, name: "New group", sort_order: groups.length })
       .select()
       .single();
     if (data) {

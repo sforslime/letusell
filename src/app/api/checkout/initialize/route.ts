@@ -27,9 +27,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate all cart items and re-price server-side
-    const itemIds = cart.map((i) => i.menuItemId);
+    const itemIds = cart.map((i) => i.productId);
     const { data: menuItems } = await admin
-      .from("menu_items")
+      .from("products")
       .select("id, name, price, is_available, vendor_id")
       .in("id", itemIds);
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     // Calculate total using server-side prices (trust client modifier adjustments for MVP)
     let totalNaira = 0;
     const orderItemsPayload = cart.map((cartItem) => {
-      const mi = itemMap.get(cartItem.menuItemId)!;
+      const mi = itemMap.get(cartItem.productId)!;
       const modifierTotal = (cartItem.selectedModifiers ?? []).reduce(
         (s, m) => s + m.priceAdjustment,
         0

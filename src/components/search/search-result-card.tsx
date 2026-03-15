@@ -5,11 +5,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { Store } from "lucide-react";
 import { formatNGN } from "@/lib/utils/currency";
-import { MenuItemModal } from "@/components/menu/menu-item-modal";
-import type { MenuItem } from "@/types/database.types";
+import { ProductModal } from "@/components/product/product-modal";
+import type { Product } from "@/types/database.types";
 
 interface SearchResultCardProps {
-  item: MenuItem;
+  item: Product;
   vendor: { id: string; name: string; slug: string };
 }
 
@@ -58,7 +58,7 @@ export function SearchResultCard({ item, vendor }: SearchResultCardProps) {
         </div>
       </button>
 
-      <MenuItemModal
+      <ProductModal
         item={item}
         vendor={vendor}
         open={modalOpen}

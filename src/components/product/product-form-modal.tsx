@@ -6,32 +6,30 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { X, ImagePlus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { menuItemSchema, type MenuItemFormValues } from "@/lib/validations/menu-item.schema";
+import { productSchema, type ProductFormValues } from "@/lib/validations/product.schema";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ModifierGroupsEditor } from "@/components/menu/modifier-groups-editor";
-import type { MenuItem, MenuItemCategory } from "@/types/database.types";
+import type { Product, ProductCategory } from "@/types/database.types";
 
-interface MenuItemFormModalProps {
+interface ProductFormModalProps {
   vendorId: string;
-  menuId: string;
-  categories: MenuItemCategory[];
-  item: MenuItem | null;
+  categories: ProductCategory[];
+  item: Product | null;
   onClose: () => void;
-  onSaved: (item: MenuItem) => void;
+  onSaved: (item: Product) => void;
   onDeleted?: (id: string) => void;
 }
 
-export function MenuItemFormModal({
+export function ProductFormModal({
   vendorId,
-  menuId,
   categories,
   item,
   onClose,
   onSaved,
   onDeleted,
-}: MenuItemFormModalProps) {
+}: ProductFormModalProps) {
   const supabase = getSupabaseBrowserClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -44,8 +42,8 @@ export function MenuItemFormModal({
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<MenuItemFormValues>({
-    resolver: zodResolver(menuItemSchema),
+  } = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
     defaultValues: {
       name: item?.name ?? "",
       description: item?.description ?? "",
@@ -87,7 +85,7 @@ export function MenuItemFormModal({
     return data.publicUrl;
   }
 
-  async function onSubmit(values: MenuItemFormValues) {
+  async function onSubmit(values: ProductFormValues) {
     setUploadError(null);
     let imageUrl: string | null = item?.image_url ?? null;
 
@@ -105,29 +103,28 @@ export function MenuItemFormModal({
     const payload = {
       ...values,
       vendor_id: vendorId,
-      menu_id: menuId,
       category_id: values.category_id || null,
       image_url: imageUrl,
     };
 
-    let saved: MenuItem;
+    let saved: Product;
     if (item) {
       const { data, error } = await supabase
-        .from("menu_items")
+        .from("products")
         .update(payload)
         .eq("id", item.id)
         .select()
         .single();
       if (error) throw error;
-      saved = data as MenuItem;
+      saved = data as Product;
     } else {
       const { data, error } = await supabase
-        .from("menu_items")
+        .from("products")
         .insert(payload)
         .select()
         .single();
       if (error) throw error;
-      saved = data as MenuItem;
+      saved = data as Product;
     }
     onSaved(saved);
   }
@@ -135,7 +132,7 @@ export function MenuItemFormModal({
   async function handleDelete() {
     if (!item || !onDeleted) return;
     setDeleting(true);
-    await supabase.from("menu_items").delete().eq("id", item.id);
+    await supabase.from("products").delete().eq("id", item.id);
     onDeleted(item.id);
   }
 
@@ -146,7 +143,7 @@ export function MenuItemFormModal({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-gray-900">
-            {item ? "Edit item" : "New menu item"}
+            {item ? "Edit product" : "New product"}
           </h2>
           <button onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100">
             <X className="h-5 w-5" />
@@ -199,15 +196,15 @@ export function MenuItemFormModal({
             </div>
 
             <Input
-              label="Item name"
-              placeholder="e.g. Jollof Rice + Chicken"
+              label="Product name"
+              placeholder="e.g. Handmade Beaded Bracelet"
               error={errors.name?.message}
               {...register("name")}
             />
 
             <Textarea
               label="Description (optional)"
-              placeholder="Short description of the item"
+              placeholder="Short description of the product"
               error={errors.description?.message}
               {...register("description")}
             />
@@ -246,15 +243,15 @@ export function MenuItemFormModal({
             </div>
 
             <Button type="submit" loading={isSubmitting} className="w-full mt-1">
-              {item ? "Save changes" : "Add item"}
+              {item ? "Save changes" : "Add product"}
             </Button>
           </form>
 
           {/* Modifiers — only shown for existing items (need ID) */}
           {item && (
             <div className="mt-4 border-t border-gray-100 pt-4">
-              <p className="mb-3 text-sm font-semibold text-gray-700">Modifiers</p>
-              <ModifierGroupsEditor menuItemId={item.id} />
+              <p className="mb-3 text-sm font-semibold text-gray-700">Variants / Options</p>
+              <ModifierGroupsEditor productId={item.id} />
             </div>
           )}
 
@@ -268,7 +265,7 @@ export function MenuItemFormModal({
                   className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-600"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Delete this item
+                  Delete this product
                 </button>
               ) : (
                 <div className="flex items-center gap-3">

@@ -108,8 +108,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to create vendor application" }, { status: 500 });
   }
 
-  // Create default menu
-  await admin.from("menus").insert({ vendor_id: vendor.id, name: "Menu" });
-
   return NextResponse.json({ success: true });
 }

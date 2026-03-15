@@ -28,11 +28,11 @@ export const useCartStore = create<CartStore>()(
           return;
         }
 
-        const existing = items.find((i) => i.menuItemId === item.menuItemId);
+        const existing = items.find((i) => i.productId === item.productId);
         if (existing) {
           set({
             items: items.map((i) =>
-              i.menuItemId === item.menuItemId
+              i.productId === item.productId
                 ? { ...i, quantity: i.quantity + item.quantity }
                 : i
             ),
@@ -47,8 +47,8 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      removeItem(menuItemId) {
-        const items = get().items.filter((i) => i.menuItemId !== menuItemId);
+      removeItem(productId) {
+        const items = get().items.filter((i) => i.productId !== productId);
         if (items.length === 0) {
           set({ items: [], vendorId: null, vendorName: null, vendorSlug: null });
         } else {
@@ -56,14 +56,14 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      updateQuantity(menuItemId, quantity) {
+      updateQuantity(productId, quantity) {
         if (quantity <= 0) {
-          get().removeItem(menuItemId);
+          get().removeItem(productId);
           return;
         }
         set({
           items: get().items.map((i) =>
-            i.menuItemId === menuItemId ? { ...i, quantity } : i
+            i.productId === productId ? { ...i, quantity } : i
           ),
         });
       },
@@ -95,7 +95,7 @@ export const useCartStore = create<CartStore>()(
       },
     }),
     {
-      name: "letusell-cart",
+      name: "letusell-cart-v2",
       partialize: (state) => ({
         items: state.items,
         vendorId: state.vendorId,

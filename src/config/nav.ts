@@ -5,7 +5,7 @@ export const navLinks = [
 
 export const vendorDashboardLinks = [
   { label: "Overview", href: "/dashboard/vendor" },
-  { label: "Menu", href: "/dashboard/vendor/menu" },
+  { label: "Products", href: "/dashboard/vendor/products" },
   { label: "Orders", href: "/dashboard/vendor/orders" },
   { label: "Settings", href: "/dashboard/vendor/settings" },
 ];

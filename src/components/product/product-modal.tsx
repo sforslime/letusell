@@ -1,23 +1,23 @@
 "use client";
 
 import Image from "next/image";
-import { X, Minus, Plus } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatNGN } from "@/lib/utils/currency";
 import { useCart } from "@/hooks/use-cart";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { MenuItem, ModifierGroup, ModifierOption } from "@/types/database.types";
+import type { Product, ModifierGroup, ModifierOption } from "@/types/database.types";
 import type { SelectedCartModifier } from "@/types/cart.types";
 
-interface MenuItemModalProps {
-  item: MenuItem;
+interface ProductModalProps {
+  item: Product;
   vendor: { id: string; name: string; slug: string };
   open: boolean;
   onClose: () => void;
 }
 
-export function MenuItemModal({ item, vendor, open, onClose }: MenuItemModalProps) {
+export function ProductModal({ item, vendor, open, onClose }: ProductModalProps) {
   const { addItem, vendorId, clearCart, items } = useCart();
   const supabase = getSupabaseBrowserClient();
   const [quantity, setQuantity] = useState(1);
@@ -32,12 +32,11 @@ export function MenuItemModal({ item, vendor, open, onClose }: MenuItemModalProp
     supabase
       .from("modifier_groups")
       .select("*, modifier_options(*)")
-      .eq("menu_item_id", item.id)
+      .eq("product_id", item.id)
       .order("sort_order")
       .then(({ data }: { data: (ModifierGroup & { modifier_options: ModifierOption[] })[] | null }) => {
         const gs = data ?? [];
         setGroups(gs);
-        // Pre-select defaults
         const defaults: Record<string, string[]> = {};
         gs.forEach((g) => {
           const defaultOpts = g.modifier_options.filter((o) => o.is_default && o.is_available);
@@ -101,7 +100,7 @@ export function MenuItemModal({ item, vendor, open, onClose }: MenuItemModalProp
 
     addItem(
       {
-        menuItemId: item.id,
+        productId: item.id,
         name: item.name,
         price: item.price,
         quantity,
@@ -129,7 +128,9 @@ export function MenuItemModal({ item, vendor, open, onClose }: MenuItemModalProp
           {item.image_url ? (
             <Image src={item.image_url} alt={item.name} fill className="object-cover" />
           ) : (
-            <div className="flex h-full items-center justify-center text-5xl">🍽️</div>
+            <div className="flex h-full items-center justify-center">
+              <ShoppingBag className="h-14 w-14 text-gray-200" />
+            </div>
           )}
           <button
             onClick={onClose}
@@ -203,7 +204,6 @@ export function MenuItemModal({ item, vendor, open, onClose }: MenuItemModalProp
               className="mt-4 w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-400/20"
             />
 
-            {/* Different vendor warning */}
             {confirmClear && isDifferentVendor && (
               <div className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-700">
                 Your cart has items from another vendor. Adding this will clear your current cart. Continue?

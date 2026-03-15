@@ -19,7 +19,7 @@ async function SearchResults({ q }: { q: string }) {
   const supabase = await getSupabaseServerClient();
 
   const { data: items } = await supabase
-    .from("menu_items")
+    .from("products")
     .select("*, vendor:vendors!inner(id, name, slug, logo_url, is_approved, is_active)")
     .ilike("name", `%${q}%`)
     .eq("is_available", true)
@@ -65,7 +65,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
           </h1>
           <div className="mt-4 max-w-lg">
             <Suspense>
-              <SearchBar placeholder="Search for jollof rice, burgers, drinks..." />
+              <SearchBar placeholder="Search for products, vendors..." />
             </Suspense>
           </div>
         </div>
@@ -85,7 +85,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
             <SearchResults q={q} />
           </Suspense>
         ) : (
-          <p className="py-20 text-center text-gray-500">Enter a search term above to find menu items.</p>
+          <p className="py-20 text-center text-gray-500">Enter a search term above to find products.</p>
         )}
       </main>
 

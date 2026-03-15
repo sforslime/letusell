@@ -11,19 +11,18 @@ import { formatNGN } from "@/lib/utils/currency";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Plus, Pencil, ToggleLeft, ToggleRight, ImageOff } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
-import type { MenuItem, MenuItemCategory } from "@/types/database.types";
-import { MenuItemFormModal } from "@/components/menu/menu-item-form-modal";
+import type { Product, ProductCategory } from "@/types/database.types";
+import { ProductFormModal } from "@/components/product/product-form-modal";
 
-export default function VendorMenuPage() {
+export default function VendorProductsPage() {
   const supabase = getSupabaseBrowserClient();
   const [vendorId, setVendorId] = useState<string | null>(null);
   const [vendorName, setVendorName] = useState<string | undefined>(undefined);
-  const [menuId, setMenuId] = useState<string | null>(null);
-  const [items, setItems] = useState<MenuItem[]>([]);
-  const [categories, setCategories] = useState<MenuItemCategory[]>([]);
+  const [items, setItems] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<MenuItem | null>(null);
+  const [editing, setEditing] = useState<Product | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
 
@@ -40,28 +39,20 @@ export default function VendorMenuPage() {
       setVendorId(vendor.id);
       setVendorName(vendor.name);
 
-      const { data: menu } = await supabase
-        .from("menus")
-        .select("id")
-        .eq("vendor_id", vendor.id)
-        .single();
-
-      setMenuId(menu?.id ?? null);
-
       const [{ data: itemsData }, { data: catsData }] = await Promise.all([
-        supabase.from("menu_items").select("*").eq("vendor_id", vendor.id).order("sort_order"),
-        supabase.from("menu_item_categories").select("*").eq("vendor_id", vendor.id).order("sort_order"),
+        supabase.from("products").select("*").eq("vendor_id", vendor.id).order("sort_order"),
+        supabase.from("product_categories").select("*").eq("vendor_id", vendor.id).order("sort_order"),
       ]);
 
-      setItems((itemsData ?? []) as MenuItem[]);
-      setCategories((catsData ?? []) as MenuItemCategory[]);
+      setItems((itemsData ?? []) as Product[]);
+      setCategories((catsData ?? []) as ProductCategory[]);
       setLoading(false);
     });
   }, []);
 
-  async function toggleAvailability(item: MenuItem) {
+  async function toggleAvailability(item: Product) {
     await supabase
-      .from("menu_items")
+      .from("products")
       .update({ is_available: !item.is_available })
       .eq("id", item.id);
     setItems((prev) =>
@@ -69,7 +60,7 @@ export default function VendorMenuPage() {
     );
   }
 
-  function handleSaved(savedItem: MenuItem) {
+  function handleSaved(savedItem: Product) {
     setItems((prev) => {
       const idx = prev.findIndex((i) => i.id === savedItem.id);
       if (idx >= 0) {
@@ -111,7 +102,7 @@ export default function VendorMenuPage() {
     setBulkLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
     const ids = Array.from(selected);
-    await fetch("/api/vendor/menu-items/bulk", {
+    await fetch("/api/vendor/products/bulk", {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -138,9 +129,9 @@ export default function VendorMenuPage() {
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900">Menu</h1>
+            <h1 className="text-2xl font-extrabold text-gray-900">Products</h1>
             <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
-              <span>{items.length} items</span>
+              <span>{items.length} products</span>
               {items.length > 0 && (
                 <>
                   <span className="text-gray-200">·</span>
@@ -156,7 +147,7 @@ export default function VendorMenuPage() {
             </div>
           </div>
           <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
-            <Plus className="mr-1.5 h-4 w-4" /> Add item
+            <Plus className="mr-1.5 h-4 w-4" /> Add product
           </Button>
         </div>
 
@@ -196,10 +187,10 @@ export default function VendorMenuPage() {
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50">
               <ImageOff className="h-6 w-6 text-gray-300" />
             </div>
-            <p className="mt-4 font-medium text-gray-600">No menu items yet</p>
-            <p className="mt-1 text-sm text-gray-400">Add your first item to get started</p>
+            <p className="mt-4 font-medium text-gray-600">No products yet</p>
+            <p className="mt-1 text-sm text-gray-400">Add your first product to get started</p>
             <Button className="mt-5" onClick={() => setFormOpen(true)}>
-              <Plus className="mr-1.5 h-4 w-4" /> Add item
+              <Plus className="mr-1.5 h-4 w-4" /> Add product
             </Button>
           </div>
         ) : (
@@ -215,7 +206,7 @@ export default function VendorMenuPage() {
                       className="rounded"
                     />
                   </th>
-                  <th className="px-5 py-3">Item</th>
+                  <th className="px-5 py-3">Product</th>
                   <th className="px-5 py-3">Price</th>
                   <th className="hidden px-5 py-3 sm:table-cell">Category</th>
                   <th className="px-5 py-3">Status</th>
@@ -308,10 +299,9 @@ export default function VendorMenuPage() {
         )}
       </main>
 
-      {formOpen && vendorId && menuId && (
-        <MenuItemFormModal
+      {formOpen && vendorId && (
+        <ProductFormModal
           vendorId={vendorId}
-          menuId={menuId}
           categories={categories}
           item={editing}
           onClose={() => { setFormOpen(false); setEditing(null); }}

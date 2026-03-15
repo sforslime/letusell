@@ -56,7 +56,7 @@ export function CartDrawer() {
           ) : (
             <div className="divide-y divide-gray-100">
               {items.map((item) => (
-                <CartItemRow key={item.menuItemId} item={item} />
+                <CartItemRow key={item.productId} item={item} />
               ))}
             </div>
           )}

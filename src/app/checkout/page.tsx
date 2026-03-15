@@ -209,7 +209,7 @@ export default function CheckoutPage() {
               <h2 className="mb-3 text-sm font-bold text-gray-900">Order summary</h2>
               <div className="divide-y divide-gray-50">
                 {items.map((item) => (
-                  <CartItemRow key={item.menuItemId} item={item} />
+                  <CartItemRow key={item.productId} item={item} />
                 ))}
               </div>
             </div>

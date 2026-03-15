@@ -1,13 +1,13 @@
-import { MenuItemCard } from "./menu-item-card";
-import type { MenuItem, MenuItemCategory } from "@/types/database.types";
+import { ProductCard } from "./product-card";
+import type { Product, ProductCategory } from "@/types/database.types";
 
-interface MenuSectionProps {
-  category: MenuItemCategory | null;
-  items: MenuItem[];
+interface ProductSectionProps {
+  category: ProductCategory | null;
+  items: Product[];
   vendor: { id: string; name: string; slug: string };
 }
 
-export function MenuSection({ category, items, vendor }: MenuSectionProps) {
+export function ProductSection({ category, items, vendor }: ProductSectionProps) {
   const available = items.filter((i) => i.is_available);
   if (available.length === 0) return null;
 
@@ -20,7 +20,7 @@ export function MenuSection({ category, items, vendor }: MenuSectionProps) {
       )}
       <div className="grid gap-3 sm:grid-cols-2">
         {available.map((item) => (
-          <MenuItemCard key={item.id} item={item} vendor={vendor} />
+          <ProductCard key={item.id} item={item} vendor={vendor} />
         ))}
       </div>
     </section>

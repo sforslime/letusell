@@ -1,19 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { Plus } from "lucide-react";
+import { Plus, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { formatNGN } from "@/lib/utils/currency";
 import { Badge } from "@/components/ui/badge";
-import { MenuItemModal } from "./menu-item-modal";
-import type { MenuItem } from "@/types/database.types";
+import { ProductModal } from "./product-modal";
+import type { Product } from "@/types/database.types";
 
-interface MenuItemCardProps {
-  item: MenuItem;
+interface ProductCardProps {
+  item: Product;
   vendor: { id: string; name: string; slug: string };
 }
 
-export function MenuItemCard({ item, vendor }: MenuItemCardProps) {
+export function ProductCard({ item, vendor }: ProductCardProps) {
   const [modalOpen, setModalOpen] = useState(false);
 
   if (!item.is_available) return null;
@@ -50,7 +50,9 @@ export function MenuItemCard({ item, vendor }: MenuItemCardProps) {
                 sizes="80px"
               />
             ) : (
-              <div className="flex h-full items-center justify-center text-2xl">🍽️</div>
+              <div className="flex h-full items-center justify-center">
+                <ShoppingBag className="h-7 w-7 text-gray-300" />
+              </div>
             )}
           </div>
           <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 shadow">
@@ -59,7 +61,7 @@ export function MenuItemCard({ item, vendor }: MenuItemCardProps) {
         </div>
       </button>
 
-      <MenuItemModal
+      <ProductModal
         item={item}
         vendor={vendor}
         open={modalOpen}

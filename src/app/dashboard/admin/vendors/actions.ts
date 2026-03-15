@@ -119,9 +119,6 @@ export async function createVendor(
 
   if (vendorErr) return { error: vendorErr.message };
 
-  // Create default menu
-  await admin.from("menus").insert({ vendor_id: vendor.id, name: "Menu" });
-
   // Promote owner role to vendor
   if (owner_id) {
     await admin.from("profiles").update({ role: "vendor" }).eq("id", owner_id);

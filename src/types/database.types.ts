@@ -57,24 +57,15 @@ export interface Vendor {
   updated_at: string;
 }
 
-export interface Menu {
-  id: string;
-  vendor_id: string;
-  name: string;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface MenuItemCategory {
+export interface ProductCategory {
   id: string;
   vendor_id: string;
   name: string;
   sort_order: number;
 }
 
-export interface MenuItem {
+export interface Product {
   id: string;
-  menu_id: string;
   vendor_id: string;
   category_id: string | null;
   name: string;
@@ -111,7 +102,7 @@ export interface Order {
 export interface OrderItem {
   id: string;
   order_id: string;
-  menu_item_id: string;
+  product_id: string;
   item_name: string;
   item_price: number;
   quantity: number;
@@ -130,7 +121,7 @@ export interface SelectedModifier {
 
 export interface ModifierGroup {
   id: string;
-  menu_item_id: string;
+  product_id: string;
   name: string;
   is_required: boolean;
   min_selections: number;
@@ -191,11 +182,9 @@ export interface Review {
 }
 
 // Joined types used in UI
-export interface VendorWithMenu extends Vendor {
-  menus: (Menu & {
-    menu_items: (MenuItem & { category: MenuItemCategory | null })[];
-  })[];
-  menu_item_categories: MenuItemCategory[];
+export interface VendorWithProducts extends Vendor {
+  products: (Product & { category: ProductCategory | null })[];
+  product_categories: ProductCategory[];
 }
 
 export interface OrderWithItems extends Order {

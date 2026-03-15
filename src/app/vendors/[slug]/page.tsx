@@ -6,10 +6,10 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { VendorStatusBadge } from "@/components/vendor/vendor-status-badge";
 import { StickyCartBar } from "@/components/vendor/sticky-cart-bar";
-import { MenuSection } from "@/components/menu/menu-section";
-import { MapPin, Clock, Star, Phone } from "lucide-react";
+import { ProductSection } from "@/components/product/product-section";
+import { MapPin, Clock, Star, Phone, Store } from "lucide-react";
 import Image from "next/image";
-import type { Vendor, MenuItem, MenuItemCategory } from "@/types/database.types";
+import type { Vendor, Product, ProductCategory } from "@/types/database.types";
 
 export const revalidate = 60;
 
@@ -64,16 +64,16 @@ export default async function VendorStorefront({ params }: PageProps) {
 
   if (!vendor) notFound();
 
-  // Fetch menu items and categories
-  const { data: menuItems } = await supabase
-    .from("menu_items")
+  // Fetch products and categories
+  const { data: products } = await supabase
+    .from("products")
     .select("*")
     .eq("vendor_id", vendor.id)
     .eq("is_available", true)
     .order("sort_order");
 
   const { data: categories } = await supabase
-    .from("menu_item_categories")
+    .from("product_categories")
     .select("*")
     .eq("vendor_id", vendor.id)
     .order("sort_order");
@@ -81,21 +81,20 @@ export default async function VendorStorefront({ params }: PageProps) {
   const vendorSummary = { id: vendor.id, name: vendor.name, slug: vendor.slug };
 
   // Group items by category
-  const uncategorized = (menuItems ?? []).filter((i) => !i.category_id);
+  const uncategorized = (products ?? []).filter((i) => !i.category_id);
   const byCategory = (categories ?? []).map((cat) => ({
-    category: cat as MenuItemCategory,
-    items: (menuItems ?? []).filter((i) => i.category_id === cat.id) as MenuItem[],
+    category: cat as ProductCategory,
+    items: (products ?? []).filter((i) => i.category_id === cat.id) as Product[],
   }));
 
   // JSON-LD structured data
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "FoodEstablishment",
+    "@type": "Store",
     name: vendor.name,
     description: vendor.description,
     address: { "@type": "PostalAddress", streetAddress: vendor.location_text },
     telephone: vendor.phone,
-    servesCuisine: vendor.category,
   };
 
   return (
@@ -129,7 +128,9 @@ export default async function VendorStorefront({ params }: PageProps) {
                 {vendor.logo_url ? (
                   <Image src={vendor.logo_url} alt={`${vendor.name} logo`} fill className="object-cover" />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-2xl">🍽️</div>
+                  <div className="flex h-full items-center justify-center">
+                    <Store className="h-8 w-8 text-gray-300" />
+                  </div>
                 )}
               </div>
               <div className="pb-0.5 min-w-0">
@@ -176,17 +177,17 @@ export default async function VendorStorefront({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Menu */}
+        {/* Products */}
         <div className="mx-auto max-w-4xl px-4 py-8 pb-24 sm:px-6">
           {byCategory.length === 0 && uncategorized.length === 0 ? (
             <div className="py-16 text-center text-gray-400">
-              <p className="text-lg font-medium">No menu items available yet.</p>
+              <p className="text-lg font-medium">No products available yet.</p>
               <p className="mt-1 text-sm">Check back soon.</p>
             </div>
           ) : (
             <div className="flex flex-col gap-8">
               {byCategory.map(({ category, items }) => (
-                <MenuSection
+                <ProductSection
                   key={category.id}
                   category={category}
                   items={items}
@@ -194,9 +195,9 @@ export default async function VendorStorefront({ params }: PageProps) {
                 />
               ))}
               {uncategorized.length > 0 && (
-                <MenuSection
+                <ProductSection
                   category={null}
-                  items={uncategorized as MenuItem[]}
+                  items={uncategorized as Product[]}
                   vendor={vendorSummary}
                 />
               )}
