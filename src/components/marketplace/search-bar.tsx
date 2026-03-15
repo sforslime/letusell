@@ -25,8 +25,10 @@ export function SearchBar({ className, placeholder = "Search vendors or dishes..
     } else {
       params.delete("q");
     }
+    // Always search on /vendors so results are visible
+    const targetPath = pathname === "/" ? "/vendors" : pathname;
     startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`);
+      router.push(`${targetPath}?${params.toString()}`);
     });
   }
 

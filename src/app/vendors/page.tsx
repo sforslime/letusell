@@ -30,7 +30,21 @@ async function VendorList({ q, category }: { q?: string; category?: string }) {
   }
 
   if (q) {
-    query = query.ilike("name", `%${q}%`);
+    // Find vendor IDs that have matching menu items
+    const { data: matchingItems } = await supabase
+      .from("menu_items")
+      .select("vendor_id")
+      .ilike("name", `%${q}%`)
+      .eq("is_available", true);
+
+    const vendorIdsFromItems = [...new Set((matchingItems ?? []).map((i) => i.vendor_id))];
+
+    if (vendorIdsFromItems.length > 0) {
+      // Vendors matching by name OR having a matching menu item
+      query = query.or(`name.ilike.%${q}%,id.in.(${vendorIdsFromItems.join(",")})`);
+    } else {
+      query = query.ilike("name", `%${q}%`);
+    }
   }
 
   const { data: vendors } = await query;
