@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { vendorDashboardLinks } from "@/config/nav";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
@@ -86,15 +86,17 @@ export default function VendorOrdersPage() {
   const [completedToday, setCompletedToday] = useState<Order[]>([]);
   const { orders, loading } = useRealtimeOrders(vendorId);
   const { playSound } = useOrderSound();
-
-  // Track previous order count to detect new inserts
-  const prevOrderCount = useState(orders.length)[0];
+  const prevOrderCountRef = useRef(0);
 
   useEffect(() => {
-    if (orders.length > prevOrderCount) {
-      playSound();
+    // Only play sound after initial load (prevOrderCountRef starts at 0 but loading flag guards it)
+    if (!loading && orders.length > prevOrderCountRef.current) {
+      if (prevOrderCountRef.current > 0) {
+        playSound();
+      }
     }
-  }, [orders.length]);
+    prevOrderCountRef.current = orders.length;
+  }, [orders.length, loading]);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }: { data: { user: User | null } }) => {

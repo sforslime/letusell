@@ -18,7 +18,7 @@ export function useRealtimeOrders(vendorId: string | null) {
       .from("orders")
       .select("*")
       .eq("vendor_id", vendorId)
-      .not("status", "in", '("completed","cancelled","awaiting_payment")')
+      .not("status", "in", "(completed,cancelled,awaiting_payment)")
       .order("created_at", { ascending: false })
       .then(({ data }: { data: Order[] | null }) => {
         setOrders(data ?? []);

@@ -16,6 +16,7 @@ import {
 import { formatNGN } from "@/lib/utils/currency";
 import { koboToNaira } from "@/lib/utils/currency";
 import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import { OpenClosedToggle } from "@/components/vendor/open-closed-toggle";
 import type { OrderStatus } from "@/types/database.types";
 import type { Metadata } from "next";
 
@@ -43,7 +44,7 @@ export default async function VendorDashboardPage() {
 
   const { data: vendor } = await supabase
     .from("vendors")
-    .select("id, name, rating, review_count")
+    .select("id, name, rating, review_count, is_active")
     .eq("owner_id", user.id)
     .single();
 
@@ -71,9 +72,44 @@ export default async function VendorDashboardPage() {
     .lte("created_at", `${today}T23:59:59`);
 
   const paid = (todayOrders ?? []).filter((o) => o.status !== "awaiting_payment" && o.status !== "cancelled");
-  const pending = (todayOrders ?? []).filter((o) => o.status === "confirmed" || o.status === "preparing");
+  const pending = (todayOrders ?? []).filter((o) =>
+    ["pending", "confirmed", "preparing", "ready"].includes(o.status)
+  );
   const completed = (todayOrders ?? []).filter((o) => o.status === "completed");
   const revenue = paid.reduce((sum, o) => sum + koboToNaira(o.amount_kobo), 0);
+
+  // This week stats
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  weekStart.setHours(0, 0, 0, 0);
+  const { data: weekOrders } = await supabase
+    .from("orders")
+    .select("amount_kobo, status")
+    .eq("vendor_id", vendor.id)
+    .gte("created_at", weekStart.toISOString())
+    .neq("status", "cancelled")
+    .neq("status", "awaiting_payment");
+
+  const weekRevenue = (weekOrders ?? []).reduce((s, o) => s + koboToNaira(o.amount_kobo), 0);
+  const avgOrderValue = paid.length > 0
+    ? paid.reduce((s, o) => s + koboToNaira(o.amount_kobo), 0) / paid.length
+    : 0;
+
+  // Top selling items today
+  const { data: topItemsRaw } = await supabase
+    .from("order_items")
+    .select("item_name, quantity, orders!inner(vendor_id, created_at, status)")
+    .eq("orders.vendor_id", vendor.id)
+    .gte("orders.created_at", `${today}T00:00:00`)
+    .neq("orders.status", "cancelled");
+
+  const itemTotals = new Map<string, number>();
+  (topItemsRaw ?? []).forEach((row) => {
+    itemTotals.set(row.item_name, (itemTotals.get(row.item_name) ?? 0) + row.quantity);
+  });
+  const topItems = [...itemTotals.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
 
   const recentOrders = (todayOrders ?? []).slice(0, 5);
 
@@ -105,9 +141,12 @@ export default async function VendorDashboardPage() {
     <div className="flex min-h-screen bg-gray-50">
       <DashboardSidebar links={navLinks} title="Vendor" vendorName={vendor.name} />
       <main className="flex-1 p-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {vendor.name}</h1>
-          <p className="mt-1 text-sm text-gray-500">Today&apos;s overview</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Welcome back, {vendor.name}</h1>
+            <p className="mt-1 text-sm text-gray-500">Today&apos;s overview</p>
+          </div>
+          <OpenClosedToggle vendorId={vendor.id} initialIsActive={vendor.is_active} />
         </div>
 
         {/* Stats cards */}
@@ -128,6 +167,20 @@ export default async function VendorDashboardPage() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Secondary KPIs */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <p className="text-sm text-gray-500">This week&apos;s revenue</p>
+            <p className="mt-1 text-xl font-bold text-gray-900">{formatNGN(weekRevenue)}</p>
+          </div>
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <p className="text-sm text-gray-500">Avg. order value (today)</p>
+            <p className="mt-1 text-xl font-bold text-gray-900">
+              {paid.length > 0 ? formatNGN(avgOrderValue) : "—"}
+            </p>
+          </div>
         </div>
 
         {/* Quick actions */}
@@ -166,6 +219,25 @@ export default async function VendorDashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Top selling items today */}
+        {topItems.length > 0 && (
+          <div className="mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm">
+            <div className="border-b border-gray-100 px-5 py-4">
+              <h2 className="font-semibold text-gray-900">Top items today</h2>
+            </div>
+            <ul className="divide-y divide-gray-50">
+              {topItems.map(([name, qty]) => (
+                <li key={name} className="flex items-center justify-between px-5 py-3">
+                  <p className="text-sm text-gray-800 truncate">{name}</p>
+                  <span className="ml-4 flex-shrink-0 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700">
+                    ×{qty}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Today's orders mini-list */}
         <div className="mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm">
